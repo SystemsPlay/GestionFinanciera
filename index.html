@@ -522,7 +522,6 @@
     </style>
 </head>
 <body>
-    <!-- Pantalla de Login -->
     <div id="loginScreen" class="login-container">
         <div class="login-box">
             <h2>💰 Control Financiero</h2>
@@ -537,12 +536,11 @@
                 </div>
                 <button type="submit" class="login-btn">Iniciar Sesión</button>
             </form>
+            <div id="loginMessage" class="alert alert-error" style="display: none; margin-top: 20px;"></div>
         </div>
     </div>
 
-    <!-- Aplicación Principal -->
     <div id="mainApp" class="main-container">
-        <!-- Header -->
         <div class="header">
             <div class="header-content">
                 <div class="logo">💰 Control Financiero Personal</div>
@@ -553,7 +551,6 @@
             </div>
         </div>
 
-        <!-- Navegación -->
         <div class="nav-tabs">
             <div class="nav-tabs-container">
                 <button class="nav-tab active" onclick="showTab('dashboard')">📊 Dashboard</button>
@@ -564,9 +561,9 @@
             </div>
         </div>
 
-        <!-- Contenido -->
         <div class="content">
-            <!-- Dashboard -->
+            <div id="appMessage" class="alert" style="display: none;"></div>
+
             <div id="dashboard" class="tab-content active">
                 <div class="dashboard-stats">
                     <div class="stat-card">
@@ -599,7 +596,6 @@
                 </div>
             </div>
 
-            <!-- Ingresos -->
             <div id="income" class="tab-content">
                 <div class="form-container">
                     <h3>Registrar Ingreso</h3>
@@ -652,7 +648,6 @@
                 </div>
             </div>
 
-            <!-- Egresos -->
             <div id="expense" class="tab-content">
                 <div class="form-container">
                     <h3>Registrar Egreso</h3>
@@ -705,7 +700,6 @@
                 </div>
             </div>
 
-            <!-- General -->
             <div id="general" class="tab-content">
                 <div class="data-table">
                     <div class="table-header">
@@ -759,23 +753,18 @@
                 </div>
             </div>
 
-            <!-- Configuración -->
             <div id="config" class="tab-content">
                 <div class="config-section">
                     <h3>Configuración de Google Sheets</h3>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>URL de Google Sheets (CSV)</label>
-                            <input type="url" id="sheetsUrl" placeholder="https://docs.google.com/spreadsheets/d/.../export?format=csv&gid=0">
-                        </div>
-                        <div class="form-group">
-                            <button class="btn btn-primary" onclick="saveConfiguration()">Guardar Configuración</button>
-                        </div>
-                    </div>
+                    <p>Para que la aplicación funcione correctamente, debes desplegar el script de Google Apps y autorizarlo.
+                       Luego, esta aplicación web se conectará directamente a tu Google Sheet a través del ID del script.</p>
+                    <p>Asegúrate de que el script <code>apps script.txt</code> esté correctamente configurado y publicado como aplicación web con acceso "Cualquier persona, incluso anónimo" o "Cualquier persona" si requieres que el login funcione desde el navegador. Para un login seguro, configúralo como "Solo tú" si vas a usar tu cuenta Google, o "Cualquier persona" con un sistema de autenticación custom.</p>
+                    <button class="btn btn-primary" onclick="setupGoogleSheet()">Configurar Google Sheet (Ejecutar setupProject)</button>
+                    <div id="setupMessage" class="alert" style="display: none; margin-top: 15px;"></div>
                 </div>
-
                 <div class="config-section">
-                    <h3>Tipos de Ingresos Predefinidos</h3>
+                    <h3>Tipos de Ingresos Predefinidos (Gestionados Localmente)</h3>
+                    <p>Estos tipos se gestionan solo en el navegador y no se guardan en Google Sheets.</p>
                     <div class="form-row">
                         <div class="form-group">
                             <label>Tipo</label>
@@ -796,9 +785,9 @@
                     <div class="predefined-list" id="incomeList">
                     </div>
                 </div>
-
                 <div class="config-section">
-                    <h3>Tipos de Egresos Predefinidos</h3>
+                    <h3>Tipos de Egresos Predefinidos (Gestionados Localmente)</h3>
+                    <p>Estos tipos se gestionan solo en el navegador y no se guardan en Google Sheets.</p>
                     <div class="form-row">
                         <div class="form-group">
                             <label>Tipo</label>
@@ -826,33 +815,21 @@
     <script>
         // Variables globales
         let currentUser = '';
-        let transactions = [];
-        let predefinedIncomes = [];
-        let predefinedExpenses = [];
-        let sheetsConfig = '';
-        
-        // Configuración de usuario por defecto (en un entorno real, esto estaría en un servidor)
-        const users = {
-            'admin': 'admin123',
-            'usuario': 'password'
-        };
+        let transactions = []; // Ahora se cargarán desde Google Sheets
+        let predefinedIncomes = []; // Se gestionan localmente, no en Sheets
+        let predefinedExpenses = []; // Se gestionan localmente, no en Sheets
 
         // Inicialización
         document.addEventListener('DOMContentLoaded', function() {
-            loadStoredData();
+            loadPredefinedDataLocal(); // Cargar datos predefinidos de localStorage si existen
             setupEventListeners();
             setDefaultDates();
         });
 
         function setupEventListeners() {
-            // Login form
             document.getElementById('loginForm').addEventListener('submit', handleLogin);
-            
-            // Forms
             document.getElementById('incomeForm').addEventListener('submit', handleIncomeSubmit);
             document.getElementById('expenseForm').addEventListener('submit', handleExpenseSubmit);
-            
-            // Filters
             document.getElementById('filterMovement').addEventListener('change', applyFilters);
             document.getElementById('filterType').addEventListener('change', applyFilters);
             document.getElementById('filterDateFrom').addEventListener('change', applyFilters);
@@ -865,21 +842,44 @@
             document.getElementById('expenseDate').value = today;
         }
 
-        // Sistema de Login
+        function showAlert(message, type = 'success', targetElementId = 'appMessage') {
+            const alertBox = document.getElementById(targetElementId);
+            alertBox.textContent = message;
+            alertBox.className = `alert alert-${type}`;
+            alertBox.style.display = 'block';
+            setTimeout(() => {
+                alertBox.style.display = 'none';
+            }, 5000);
+        }
+
+        // Sistema de Login con Apps Script
         function handleLogin(e) {
             e.preventDefault();
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
-            
-            if (users[username] && users[username] === password) {
-                currentUser = username;
-                document.getElementById('welcomeUser').textContent = `Bienvenido, ${username}`;
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('mainApp').style.display = 'block';
-                loadData();
-            } else {
-                alert('Usuario o contraseña incorrectos');
-            }
+            const loginMessage = document.getElementById('loginMessage');
+
+            loginMessage.style.display = 'none'; // Ocultar mensaje previo
+
+            // Llama a la función verifyUser en Apps Script
+            google.script.run
+                .withSuccessHandler(function(response) {
+                    if (response.success) {
+                        currentUser = username;
+                        document.getElementById('welcomeUser').textContent = `Bienvenido, ${username}`;
+                        document.getElementById('loginScreen').style.display = 'none';
+                        document.getElementById('mainApp').style.display = 'block';
+                        loadDataFromAppsScript(); // Cargar datos del usuario desde Apps Script
+                        showAlert(response.message, 'success', 'appMessage');
+                    } else {
+                        showAlert(response.message, 'error', 'loginMessage');
+                    }
+                })
+                .withFailureHandler(function(error) {
+                    showAlert('Error al iniciar sesión: ' + error.message, 'error', 'loginMessage');
+                    console.error('Login error:', error);
+                })
+                .verifyUser(username, password);
         }
 
         function logout() {
@@ -887,166 +887,282 @@
             document.getElementById('loginScreen').style.display = 'flex';
             document.getElementById('mainApp').style.display = 'none';
             document.getElementById('loginForm').reset();
+            showAlert('Sesión cerrada correctamente.', 'success', 'loginMessage');
+        }
+
+        // Configuración de Google Sheets (Ejecutar setupProject)
+        function setupGoogleSheet() {
+            const setupMessage = document.getElementById('setupMessage');
+            setupMessage.style.display = 'block';
+            setupMessage.className = 'alert';
+            setupMessage.textContent = 'Configurando Google Sheet... por favor espera.';
+
+            google.script.run
+                .withSuccessHandler(function(response) {
+                    if (response.success) {
+                        showAlert(response.message, 'success', 'setupMessage');
+                        console.log('Setup Project Success:', response);
+                    } else {
+                        showAlert(response.message || 'Error al configurar la hoja.', 'error', 'setupMessage');
+                        console.error('Setup Project Error:', response.error);
+                    }
+                })
+                .withFailureHandler(function(error) {
+                    showAlert('Error de conexión con Apps Script: ' + error.message, 'error', 'setupMessage');
+                    console.error('Setup Project Failure:', error);
+                })
+                .setupProject();
         }
 
         // Navegación entre tabs
         function showTab(tabName) {
-            // Ocultar todos los tabs
             const tabContents = document.querySelectorAll('.tab-content');
             tabContents.forEach(tab => tab.classList.remove('active'));
-            
-            // Remover clase active de todos los botones
+
             const tabButtons = document.querySelectorAll('.nav-tab');
             tabButtons.forEach(btn => btn.classList.remove('active'));
-            
-            // Mostrar tab seleccionado
+
             document.getElementById(tabName).classList.add('active');
             event.target.classList.add('active');
-            
-            // Actualizar gráficos si es dashboard
-            if (tabName === 'dashboard') {
-                setTimeout(() => {
-                    updateDashboard();
-                }, 100);
+
+            // Recargar datos al cambiar de tab si es necesario (ej. dashboard o tablas de transacciones)
+            if (['dashboard', 'income', 'expense', 'general'].includes(tabName)) {
+                loadDataFromAppsScript();
             }
         }
 
-        // Gestión de datos
-        function loadStoredData() {
-            const storedTransactions = JSON.parse(localStorage.getItem('transactions') || '[]');
-            const storedPredefinedIncomes = JSON.parse(localStorage.getItem('predefinedIncomes') || '[]');
-            const storedPredefinedExpenses = JSON.parse(localStorage.getItem('predefinedExpenses') || '[]');
-            const storedSheetsConfig = localStorage.getItem('sheetsConfig') || '';
-            
-            transactions = storedTransactions;
-            predefinedIncomes = storedPredefinedIncomes;
-            predefinedExpenses = storedPredefinedExpenses;
-            sheetsConfig = storedSheetsConfig;
-            
-            if (sheetsConfig) {
-                document.getElementById('sheetsUrl').value = sheetsConfig;
-            }
+        // Gestión de datos con Apps Script
+        function loadDataFromAppsScript() {
+            // Cargar transacciones
+            google.script.run
+                .withSuccessHandler(function(response) {
+                    if (response.success) {
+                        transactions = response.data; // Actualizar la variable global
+                        updateTables();
+                        updateDashboard();
+                        updateFilterTypes();
+                        updatePredefinedSelects();
+                    } else {
+                        showAlert('Error al cargar transacciones: ' + response.error, 'error');
+                        transactions = []; // Limpiar si hay error
+                        updateTables();
+                        updateDashboard();
+                    }
+                })
+                .withFailureHandler(function(error) {
+                    showAlert('Error de conexión al cargar transacciones: ' + error.message, 'error');
+                    console.error('Load transactions error:', error);
+                })
+                .getTransactions();
+
+            // Cargar estadísticas
+            google.script.run
+                .withSuccessHandler(function(response) {
+                    if (response.success) {
+                        document.getElementById('totalIncome').textContent = formatCurrency(response.data.totalIncome);
+                        document.getElementById('totalExpense').textContent = formatCurrency(response.data.totalExpense);
+                        document.getElementById('totalBalance').textContent = formatCurrency(response.data.balance);
+                        document.getElementById('totalTransactions').textContent = response.data.totalTransactions;
+                        updateCharts(transactions); // Los gráficos usan las transacciones ya cargadas
+                    } else {
+                        showAlert('Error al cargar estadísticas: ' + response.error, 'error');
+                        console.error('Load stats error:', response.error);
+                    }
+                })
+                .withFailureHandler(function(error) {
+                    showAlert('Error de conexión al cargar estadísticas: ' + error.message, 'error');
+                    console.error('Load stats error:', error);
+                })
+                .getStats();
         }
 
-        function saveData() {
-            localStorage.setItem('transactions', JSON.stringify(transactions));
+        // Cargar datos predefinidos (gestionados localmente en el navegador)
+        function loadPredefinedDataLocal() {
+            predefinedIncomes = JSON.parse(localStorage.getItem('predefinedIncomes') || '[]');
+            predefinedExpenses = JSON.parse(localStorage.getItem('predefinedExpenses') || '[]');
+            updatePredefinedLists();
+            updatePredefinedSelects();
+        }
+
+        function savePredefinedDataLocal() {
             localStorage.setItem('predefinedIncomes', JSON.stringify(predefinedIncomes));
             localStorage.setItem('predefinedExpenses', JSON.stringify(predefinedExpenses));
-            localStorage.setItem('sheetsConfig', sheetsConfig);
-        }
-
-        function loadData() {
-            updatePredefinedSelects();
-            updateTables();
-            updateDashboard();
-            updatePredefinedLists();
-            updateFilterTypes();
         }
 
         // Manejo de ingresos
         function handleIncomeSubmit(e) {
             e.preventDefault();
-            
             const income = {
-                id: Date.now(),
+                action: 'addTransaction',
                 date: document.getElementById('incomeDate').value,
                 type: document.getElementById('incomeType').value,
                 description: document.getElementById('incomeDescription').value,
                 amount: parseFloat(document.getElementById('incomeAmount').value),
                 movement: 'Ingreso'
             };
-            
-            transactions.push(income);
-            saveData();
-            syncWithGoogleSheets(income);
-            updateTables();
-            updateDashboard();
-            document.getElementById('incomeForm').reset();
-            setDefaultDates();
-            showAlert('Ingreso registrado exitosamente', 'success');
+
+            google.script.run
+                .withSuccessHandler(function(response) {
+                    if (response.success) {
+                        showAlert('Ingreso registrado correctamente!', 'success');
+                        document.getElementById('incomeForm').reset();
+                        setDefaultDates();
+                        loadDataFromAppsScript(); // Recargar todos los datos
+                    } else {
+                        showAlert('Error al registrar ingreso: ' + response.error, 'error');
+                    }
+                })
+                .withFailureHandler(function(error) {
+                    showAlert('Error de conexión al registrar ingreso: ' + error.message, 'error');
+                    console.error('Add income error:', error);
+                })
+                .doPost(income); // Llamar a doPost con la acción 'addTransaction'
         }
 
         // Manejo de egresos
         function handleExpenseSubmit(e) {
             e.preventDefault();
-            
             const expense = {
-                id: Date.now(),
+                action: 'addTransaction',
                 date: document.getElementById('expenseDate').value,
                 type: document.getElementById('expenseType').value,
                 description: document.getElementById('expenseDescription').value,
                 amount: parseFloat(document.getElementById('expenseAmount').value),
                 movement: 'Egreso'
             };
-            
-            transactions.push(expense);
-            saveData();
-            syncWithGoogleSheets(expense);
-            updateTables();
-            updateDashboard();
-            document.getElementById('expenseForm').reset();
-            setDefaultDates();
-            showAlert('Egreso registrado exitosamente', 'success');
+
+            google.script.run
+                .withSuccessHandler(function(response) {
+                    if (response.success) {
+                        showAlert('Egreso registrado correctamente!', 'success');
+                        document.getElementById('expenseForm').reset();
+                        setDefaultDates();
+                        loadDataFromAppsScript(); // Recargar todos los datos
+                    } else {
+                        showAlert('Error al registrar egreso: ' + response.error, 'error');
+                    }
+                })
+                .withFailureHandler(function(error) {
+                    showAlert('Error de conexión al registrar egreso: ' + error.message, 'error');
+                    console.error('Add expense error:', error);
+                })
+                .doPost(expense); // Llamar a doPost con la acción 'addTransaction'
         }
 
-        // Actualizar valores por defecto
-        function updateIncomeDefaults() {
-            const selectedType = document.getElementById('incomeType').value;
-            const predefined = predefinedIncomes.find(item => item.type === selectedType);
-            
-            if (predefined) {
-                document.getElementById('incomeDescription').value = predefined.description;
-                document.getElementById('incomeAmount').value = predefined.amount;
+        function deleteTransaction(rowNumber) {
+            if (!confirm('¿Estás seguro de que quieres eliminar esta transacción?')) {
+                return;
             }
+
+            google.script.run
+                .withSuccessHandler(function(response) {
+                    if (response.success) {
+                        showAlert('Transacción eliminada correctamente!', 'success');
+                        loadDataFromAppsScript(); // Recargar todos los datos
+                    } else {
+                        showAlert('Error al eliminar transacción: ' + response.error, 'error');
+                    }
+                })
+                .withFailureHandler(function(error) {
+                    showAlert('Error de conexión al eliminar transacción: ' + error.message, 'error');
+                    console.error('Delete transaction error:', error);
+                })
+                .deleteTransaction(rowNumber);
         }
 
-        function updateExpenseDefaults() {
-            const selectedType = document.getElementById('expenseType').value;
-            const predefined = predefinedExpenses.find(item => item.type === selectedType);
-            
-            if (predefined) {
-                document.getElementById('expenseDescription').value = predefined.description;
-                document.getElementById('expenseAmount').value = predefined.amount;
-            }
-        }
+        // Actualizar tablas
+        function updateTables() {
+            const incomeTableBody = document.getElementById('incomeTableBody');
+            const expenseTableBody = document.getElementById('expenseTableBody');
+            const generalTableBody = document.getElementById('generalTableBody');
 
-        // Actualizar selects con tipos predefinidos
-        function updatePredefinedSelects() {
-            const incomeSelect = document.getElementById('incomeType');
-            const expenseSelect = document.getElementById('expenseType');
-            
-            // Limpiar opciones
-            incomeSelect.innerHTML = '<option value="">Seleccionar tipo</option>';
-            expenseSelect.innerHTML = '<option value="">Seleccionar tipo</option>';
-            
-            // Agregar tipos de ingresos
-            predefinedIncomes.forEach(income => {
-                const option = document.createElement('option');
-                option.value = income.type;
-                option.textContent = income.type;
-                incomeSelect.appendChild(option);
+            incomeTableBody.innerHTML = '';
+            expenseTableBody.innerHTML = '';
+            generalTableBody.innerHTML = '';
+
+            const filteredTransactions = applyFiltersToData(transactions);
+
+            filteredTransactions.forEach(t => {
+                const row = `
+                    <tr>
+                        <td>${t.date}</td>
+                        ${t.movement === 'Ingreso' ? `<td>${t.type}</td><td>${t.description}</td><td class="amount-cell income">${formatCurrency(t.amount)}</td>` : ''}
+                        ${t.movement === 'Egreso' ? `<td>${t.type}</td><td>${t.description}</td><td class="amount-cell expense">${formatCurrency(t.amount)}</td>` : ''}
+                        ${t.movement === 'Ingreso' || t.movement === 'Egreso' ? `<td><button class="delete-btn" onclick="deleteTransaction(${t.id})">Eliminar</button></td>` : ''}
+                    </tr>
+                `;
+
+                // Para tabla de Ingresos
+                if (t.movement === 'Ingreso') {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${t.date}</td>
+                        <td>${t.type}</td>
+                        <td>${t.description}</td>
+                        <td class="amount-cell income">${formatCurrency(t.amount)}</td>
+                        <td><button class="delete-btn" onclick="deleteTransaction(${t.id})">Eliminar</button></td>
+                    `;
+                    incomeTableBody.appendChild(tr);
+                }
+
+                // Para tabla de Egresos
+                if (t.movement === 'Egreso') {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${t.date}</td>
+                        <td>${t.type}</td>
+                        <td>${t.description}</td>
+                        <td class="amount-cell expense">${formatCurrency(t.amount)}</td>
+                        <td><button class="delete-btn" onclick="deleteTransaction(${t.id})">Eliminar</button></td>
+                    `;
+                    expenseTableBody.appendChild(tr);
+                }
+
+                // Para tabla General
+                const trGeneral = document.createElement('tr');
+                trGeneral.innerHTML = `
+                    <td>${t.date}</td>
+                    <td class="${t.movement === 'Ingreso' ? 'income' : 'expense'}">${t.movement}</td>
+                    <td>${t.type}</td>
+                    <td>${t.description}</td>
+                    <td class="amount-cell ${t.movement === 'Ingreso' ? 'income' : 'expense'}">${formatCurrency(t.amount)}</td>
+                    <td><button class="delete-btn" onclick="deleteTransaction(${t.id})">Eliminar</button></td>
+                `;
+                generalTableBody.appendChild(trGeneral);
             });
-            
-            // Agregar tipos de egresos
-            predefinedExpenses.forEach(expense => {
-                const option = document.createElement('option');
-                option.value = expense.type;
-                option.textContent = expense.type;
-                expenseSelect.appendChild(option);
+        }
+
+        function updateDashboard() {
+            // Stats are now fetched via getStats() separately in loadDataFromAppsScript()
+            // Charts depend on `transactions` which is also fetched.
+            updateCharts(transactions);
+        }
+
+        // Filtros
+        function applyFilters() {
+            updateTables(); // Re-render tables with current filters
+        }
+
+        function applyFiltersToData(data) {
+            const filterMovement = document.getElementById('filterMovement').value;
+            const filterType = document.getElementById('filterType').value;
+            const filterDateFrom = document.getElementById('filterDateFrom').value;
+            const filterDateTo = document.getElementById('filterDateTo').value;
+
+            return data.filter(t => {
+                const matchesMovement = filterMovement ? t.movement === filterMovement : true;
+                const matchesType = filterType ? t.type === filterType : true;
+                const matchesDateFrom = filterDateFrom ? new Date(t.date) >= new Date(filterDateFrom) : true;
+                const matchesDateTo = filterDateTo ? new Date(t.date) <= new Date(filterDateTo) : true;
+                return matchesMovement && matchesType && matchesDateFrom && matchesDateTo;
             });
         }
 
-        // Actualizar filtros de tipo
         function updateFilterTypes() {
             const filterTypeSelect = document.getElementById('filterType');
             filterTypeSelect.innerHTML = '<option value="">Todos</option>';
-            
-            const allTypes = new Set();
-            transactions.forEach(transaction => {
-                allTypes.add(transaction.type);
-            });
-            
-            Array.from(allTypes).sort().forEach(type => {
+            const allTypes = new Set(transactions.map(t => t.type));
+            allTypes.forEach(type => {
                 const option = document.createElement('option');
                 option.value = type;
                 option.textContent = type;
@@ -1054,177 +1170,47 @@
             });
         }
 
-        // Actualizar tablas
-        function updateTables() {
-            updateIncomeTable();
-            updateExpenseTable();
-            updateGeneralTable();
-            updateFilterTypes();
-        }
-
-        function updateIncomeTable() {
-            const tbody = document.getElementById('incomeTableBody');
-            const incomes = transactions.filter(t => t.movement === 'Ingreso');
-            
-            tbody.innerHTML = '';
-            incomes.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(income => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${formatDate(income.date)}</td>
-                    <td>${income.type}</td>
-                    <td>${income.description}</td>
-                    <td class="amount-cell income">${formatNumber(income.amount)}</td>
-                    <td><button class="delete-btn" onclick="deleteTransaction(${income.id})">Eliminar</button></td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        function updateExpenseTable() {
-            const tbody = document.getElementById('expenseTableBody');
-            const expenses = transactions.filter(t => t.movement === 'Egreso');
-            
-            tbody.innerHTML = '';
-            expenses.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(expense => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${formatDate(expense.date)}</td>
-                    <td>${expense.type}</td>
-                    <td>${expense.description}</td>
-                    <td class="amount-cell expense">${formatNumber(expense.amount)}</td>
-                    <td><button class="delete-btn" onclick="deleteTransaction(${expense.id})">Eliminar</button></td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        function updateGeneralTable() {
-            applyFilters();
-        }
-
-        // Aplicar filtros
-        function applyFilters() {
-            const movementFilter = document.getElementById('filterMovement').value;
-            const typeFilter = document.getElementById('filterType').value;
-            const dateFromFilter = document.getElementById('filterDateFrom').value;
-            const dateToFilter = document.getElementById('filterDateTo').value;
-            
-            let filteredTransactions = [...transactions];
-            
-            if (movementFilter) {
-                filteredTransactions = filteredTransactions.filter(t => t.movement === movementFilter);
-            }
-            
-            if (typeFilter) {
-                filteredTransactions = filteredTransactions.filter(t => t.type === typeFilter);
-            }
-            
-            if (dateFromFilter) {
-                filteredTransactions = filteredTransactions.filter(t => t.date >= dateFromFilter);
-            }
-            
-            if (dateToFilter) {
-                filteredTransactions = filteredTransactions.filter(t => t.date <= dateToFilter);
-            }
-            
-            const tbody = document.getElementById('generalTableBody');
-            tbody.innerHTML = '';
-            
-            filteredTransactions.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(transaction => {
-                const row = document.createElement('tr');
-                const amountClass = transaction.movement === 'Ingreso' ? 'income' : 'expense';
-                row.innerHTML = `
-                    <td>${formatDate(transaction.date)}</td>
-                    <td>${transaction.movement}</td>
-                    <td>${transaction.type}</td>
-                    <td>${transaction.description}</td>
-                    <td class="amount-cell ${amountClass}">${formatNumber(transaction.amount)}</td>
-                    <td><button class="delete-btn" onclick="deleteTransaction(${transaction.id})">Eliminar</button></td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        // Eliminar transacción
-        function deleteTransaction(id) {
-            if (confirm('¿Estás seguro de eliminar esta transacción?')) {
-                transactions = transactions.filter(t => t.id !== id);
-                saveData();
-                updateTables();
-                updateDashboard();
-                showAlert('Transacción eliminada exitosamente', 'success');
-            }
-        }
-
-        // Dashboard y estadísticas
-        function updateDashboard() {
-            const incomes = transactions.filter(t => t.movement === 'Ingreso');
-            const expenses = transactions.filter(t => t.movement === 'Egreso');
-            
-            const totalIncome = incomes.reduce((sum, t) => sum + t.amount, 0);
-            const totalExpense = expenses.reduce((sum, t) => sum + t.amount, 0);
-            const balance = totalIncome - totalExpense;
-            
-            document.getElementById('totalIncome').textContent = `${formatNumber(totalIncome)}`;
-            document.getElementById('totalExpense').textContent = `${formatNumber(totalExpense)}`;
-            document.getElementById('totalBalance').textContent = `${formatNumber(balance)}`;
-            document.getElementById('totalTransactions').textContent = transactions.length;
-            
-            // Actualizar clase de balance
-            const balanceElement = document.getElementById('totalBalance');
-            balanceElement.className = `amount ${balance >= 0 ? 'income' : 'expense'}`;
-            
-            updateCharts();
-        }
-
         // Gráficos
-        function updateCharts() {
-            updateLineChart();
-            updatePieChart();
-        }
+        let lineChartInstance = null;
+        let pieChartInstance = null;
 
-        function updateLineChart() {
-            const ctx = document.getElementById('lineChart').getContext('2d');
-            
-            // Destruir gráfico existente si existe
-            if (window.lineChart) {
-                window.lineChart.destroy();
-            }
-            
-            // Preparar datos por mes
-            const monthlyData = {};
-            transactions.forEach(transaction => {
-                const month = transaction.date.substring(0, 7); // YYYY-MM
-                if (!monthlyData[month]) {
-                    monthlyData[month] = { income: 0, expense: 0 };
+        function updateCharts(data) {
+            // Line Chart: Monthly Evolution
+            const monthlyData = data.reduce((acc, t) => {
+                const month = t.date.substring(0, 7); // YYYY-MM
+                if (!acc[month]) {
+                    acc[month] = { income: 0, expense: 0 };
                 }
-                if (transaction.movement === 'Ingreso') {
-                    monthlyData[month].income += transaction.amount;
+                if (t.movement === 'Ingreso') {
+                    acc[month].income += t.amount;
                 } else {
-                    monthlyData[month].expense += transaction.amount;
+                    acc[month].expense += t.amount;
                 }
-            });
-            
-            const months = Object.keys(monthlyData).sort();
-            const incomeData = months.map(month => monthlyData[month].income);
-            const expenseData = months.map(month => monthlyData[month].expense);
-            
-            window.lineChart = new Chart(ctx, {
+                return acc;
+            }, {});
+
+            const sortedMonths = Object.keys(monthlyData).sort();
+            const monthlyIncome = sortedMonths.map(month => monthlyData[month].income);
+            const monthlyExpense = sortedMonths.map(month => monthlyData[month].expense);
+
+            const lineCtx = document.getElementById('lineChart').getContext('2d');
+            if (lineChartInstance) lineChartInstance.destroy();
+            lineChartInstance = new Chart(lineCtx, {
                 type: 'line',
                 data: {
-                    labels: months.map(month => formatMonth(month)),
+                    labels: sortedMonths,
                     datasets: [{
                         label: 'Ingresos',
-                        data: incomeData,
+                        data: monthlyIncome,
                         borderColor: '#28a745',
-                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
-                        tension: 0.4
+                        tension: 0.1,
+                        fill: false
                     }, {
                         label: 'Egresos',
-                        data: expenseData,
+                        data: monthlyExpense,
                         borderColor: '#dc3545',
-                        backgroundColor: 'rgba(220, 53, 69, 0.1)',
-                        tension: 0.4
+                        tension: 0.1,
+                        fill: false
                     }]
                 },
                 options: {
@@ -1232,318 +1218,185 @@
                     maintainAspectRatio: false,
                     scales: {
                         y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return ' + formatNumber(value);
-                                }
-                            }
-                        }
-                    },
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return context.dataset.label + ':  + formatNumber(context.parsed.y);
-                                }
-                            }
+                            beginAtZero: true
                         }
                     }
                 }
             });
-        }
 
-        function updatePieChart() {
-            const ctx = document.getElementById('pieChart').getContext('2d');
-            
-            // Destruir gráfico existente si existe
-            if (window.pieChart) {
-                window.pieChart.destroy();
-            }
-            
-            // Preparar datos por tipo
-            const typeData = {};
-            transactions.forEach(transaction => {
-                if (!typeData[transaction.type]) {
-                    typeData[transaction.type] = 0;
-                }
-                typeData[transaction.type] += transaction.amount;
-            });
-            
-            const types = Object.keys(typeData);
-            const amounts = Object.values(typeData);
-            const colors = generateColors(types.length);
-            
-            window.pieChart = new Chart(ctx, {
-                type: 'doughnut',
+            // Pie Chart: Distribution by Category (Expenses only for simplicity, can be expanded)
+            const categoryData = data.filter(t => t.movement === 'Egreso').reduce((acc, t) => {
+                acc[t.type] = (acc[t.type] || 0) + t.amount;
+                return acc;
+            }, {});
+
+            const pieLabels = Object.keys(categoryData);
+            const pieValues = Object.values(categoryData);
+
+            const pieCtx = document.getElementById('pieChart').getContext('2d');
+            if (pieChartInstance) pieChartInstance.destroy();
+            pieChartInstance = new Chart(pieCtx, {
+                type: 'pie',
                 data: {
-                    labels: types,
+                    labels: pieLabels,
                     datasets: [{
-                        data: amounts,
-                        backgroundColor: colors,
-                        borderWidth: 2,
-                        borderColor: '#fff'
+                        data: pieValues,
+                        backgroundColor: [
+                            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#A3C8F3', '#FFD700', '#ADFF2F', '#FF69B4'
+                        ],
+                        hoverOffset: 4
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const percentage = ((context.parsed / amounts.reduce((a, b) => a + b, 0)) * 100).toFixed(1);
-                                    return context.label + ':  + formatNumber(context.parsed) + ' (' + percentage + '%)';
-                                }
-                            }
-                        },
-                        legend: {
-                            position: 'bottom'
-                        }
-                    }
                 }
             });
         }
 
-        // Configuración
-        function saveConfiguration() {
-            sheetsConfig = document.getElementById('sheetsUrl').value;
-            saveData();
-            showAlert('Configuración guardada exitosamente', 'success');
-        }
+        // Predefined Incomes/Expenses (still local)
+        function updatePredefinedSelects() {
+            const incomeTypeSelect = document.getElementById('incomeType');
+            const expenseTypeSelect = document.getElementById('expenseType');
 
-        function addPredefinedIncome() {
-            const type = document.getElementById('newIncomeType').value.trim();
-            const description = document.getElementById('newIncomeDescription').value.trim();
-            const amount = parseFloat(document.getElementById('newIncomeAmount').value);
-            
-            if (!type || !description || isNaN(amount)) {
-                showAlert('Por favor completa todos los campos', 'error');
-                return;
-            }
-            
-            // Verificar si ya existe
-            if (predefinedIncomes.some(item => item.type === type)) {
-                showAlert('Este tipo de ingreso ya existe', 'error');
-                return;
-            }
-            
-            predefinedIncomes.push({ type, description, amount });
-            saveData();
-            updatePredefinedSelects();
-            updatePredefinedLists();
-            
-            // Limpiar campos
-            document.getElementById('newIncomeType').value = '';
-            document.getElementById('newIncomeDescription').value = '';
-            document.getElementById('newIncomeAmount').value = '';
-            
-            showAlert('Tipo de ingreso agregado exitosamente', 'success');
-        }
+            incomeTypeSelect.innerHTML = '<option value="">Seleccionar tipo</option>';
+            predefinedIncomes.forEach(inc => {
+                const option = document.createElement('option');
+                option.value = inc.type;
+                option.textContent = inc.type;
+                incomeTypeSelect.appendChild(option);
+            });
 
-        function addPredefinedExpense() {
-            const type = document.getElementById('newExpenseType').value.trim();
-            const description = document.getElementById('newExpenseDescription').value.trim();
-            const amount = parseFloat(document.getElementById('newExpenseAmount').value);
-            
-            if (!type || !description || isNaN(amount)) {
-                showAlert('Por favor completa todos los campos', 'error');
-                return;
-            }
-            
-            // Verificar si ya existe
-            if (predefinedExpenses.some(item => item.type === type)) {
-                showAlert('Este tipo de egreso ya existe', 'error');
-                return;
-            }
-            
-            predefinedExpenses.push({ type, description, amount });
-            saveData();
-            updatePredefinedSelects();
-            updatePredefinedLists();
-            
-            // Limpiar campos
-            document.getElementById('newExpenseType').value = '';
-            document.getElementById('newExpenseDescription').value = '';
-            document.getElementById('newExpenseAmount').value = '';
-            
-            showAlert('Tipo de egreso agregado exitosamente', 'success');
+            expenseTypeSelect.innerHTML = '<option value="">Seleccionar tipo</option>';
+            predefinedExpenses.forEach(exp => {
+                const option = document.createElement('option');
+                option.value = exp.type;
+                option.textContent = exp.type;
+                expenseTypeSelect.appendChild(option);
+            });
         }
 
         function updatePredefinedLists() {
-            // Lista de ingresos
             const incomeList = document.getElementById('incomeList');
+            const expenseList = document.getElementById('expenseList');
+
             incomeList.innerHTML = '';
-            predefinedIncomes.forEach((income, index) => {
+            predefinedIncomes.forEach((inc, index) => {
                 const item = document.createElement('div');
                 item.className = 'predefined-item';
                 item.innerHTML = `
                     <div class="item-info">
-                        <div class="item-type">${income.type}</div>
-                        <div class="item-description">${income.description}</div>
+                        <div class="item-type">${inc.type}</div>
+                        <div class="item-description">${inc.description}</div>
                     </div>
-                    <div class="item-amount">${formatNumber(income.amount)}</div>
-                    <button class="delete-btn" onclick="deletePredefinedIncome(${index})">Eliminar</button>
+                    <div class="item-amount">${formatCurrency(inc.amount)}</div>
+                    <button class="btn btn-danger btn-sm" onclick="removePredefinedIncome(${index})">Eliminar</button>
                 `;
                 incomeList.appendChild(item);
             });
-            
-            // Lista de egresos
-            const expenseList = document.getElementById('expenseList');
+
             expenseList.innerHTML = '';
-            predefinedExpenses.forEach((expense, index) => {
+            predefinedExpenses.forEach((exp, index) => {
                 const item = document.createElement('div');
                 item.className = 'predefined-item';
                 item.innerHTML = `
                     <div class="item-info">
-                        <div class="item-type">${expense.type}</div>
-                        <div class="item-description">${expense.description}</div>
+                        <div class="item-type">${exp.type}</div>
+                        <div class="item-description">${exp.description}</div>
                     </div>
-                    <div class="item-amount">${formatNumber(expense.amount)}</div>
-                    <button class="delete-btn" onclick="deletePredefinedExpense(${index})">Eliminar</button>
+                    <div class="item-amount">${formatCurrency(exp.amount)}</div>
+                    <button class="btn btn-danger btn-sm" onclick="removePredefinedExpense(${index})">Eliminar</button>
                 `;
                 expenseList.appendChild(item);
             });
         }
 
-        function deletePredefinedIncome(index) {
-            if (confirm('¿Estás seguro de eliminar este tipo de ingreso?')) {
-                predefinedIncomes.splice(index, 1);
-                saveData();
-                updatePredefinedSelects();
+        function addPredefinedIncome() {
+            const type = document.getElementById('newIncomeType').value;
+            const description = document.getElementById('newIncomeDescription').value;
+            const amount = parseFloat(document.getElementById('newIncomeAmount').value);
+
+            if (type && description && !isNaN(amount)) {
+                predefinedIncomes.push({ type, description, amount });
+                savePredefinedDataLocal();
                 updatePredefinedLists();
-                showAlert('Tipo de ingreso eliminado exitosamente', 'success');
-            }
-        }
-
-        function deletePredefinedExpense(index) {
-            if (confirm('¿Estás seguro de eliminar este tipo de egreso?')) {
-                predefinedExpenses.splice(index, 1);
-                saveData();
                 updatePredefinedSelects();
+                document.getElementById('newIncomeType').value = '';
+                document.getElementById('newIncomeDescription').value = '';
+                document.getElementById('newIncomeAmount').value = '';
+                showAlert('Tipo de ingreso predefinido agregado.', 'success', 'appMessage');
+            } else {
+                showAlert('Por favor, completa todos los campos para el ingreso predefinido.', 'error', 'appMessage');
+            }
+        }
+
+        function removePredefinedIncome(index) {
+            predefinedIncomes.splice(index, 1);
+            savePredefinedDataLocal();
+            updatePredefinedLists();
+            updatePredefinedSelects();
+            showAlert('Tipo de ingreso predefinido eliminado.', 'success', 'appMessage');
+        }
+
+        function addPredefinedExpense() {
+            const type = document.getElementById('newExpenseType').value;
+            const description = document.getElementById('newExpenseDescription').value;
+            const amount = parseFloat(document.getElementById('newExpenseAmount').value);
+
+            if (type && description && !isNaN(amount)) {
+                predefinedExpenses.push({ type, description, amount });
+                savePredefinedDataLocal();
                 updatePredefinedLists();
-                showAlert('Tipo de egreso eliminado exitosamente', 'success');
+                updatePredefinedSelects();
+                document.getElementById('newExpenseType').value = '';
+                document.getElementById('newExpenseDescription').value = '';
+                document.getElementById('newExpenseAmount').value = '';
+                showAlert('Tipo de egreso predefinido agregado.', 'success', 'appMessage');
+            } else {
+                showAlert('Por favor, completa todos los campos para el egreso predefinido.', 'error', 'appMessage');
             }
         }
 
-        // Sincronización con Google Sheets
-        async function syncWithGoogleSheets(transaction) {
-            if (!sheetsConfig) return;
-            
-            try {
-                // Aquí se implementaría la lógica de sincronización
-                // Por ahora solo mostramos un mensaje de confirmación
-                console.log('Sincronizando con Google Sheets...', transaction);
-            } catch (error) {
-                console.error('Error al sincronizar con Google Sheets:', error);
-                showAlert('Error al sincronizar con Google Sheets', 'error');
+        function removePredefinedExpense(index) {
+            predefinedExpenses.splice(index, 1);
+            savePredefinedDataLocal();
+            updatePredefinedLists();
+            updatePredefinedSelects();
+            showAlert('Tipo de egreso predefinido eliminado.', 'success', 'appMessage');
+        }
+
+        function updateIncomeDefaults() {
+            const selectedType = document.getElementById('incomeType').value;
+            const selectedIncome = predefinedIncomes.find(inc => inc.type === selectedType);
+            if (selectedIncome) {
+                document.getElementById('incomeDescription').value = selectedIncome.description;
+                document.getElementById('incomeAmount').value = selectedIncome.amount;
+            } else {
+                document.getElementById('incomeDescription').value = '';
+                document.getElementById('incomeAmount').value = '';
             }
         }
 
-        // Utilidades
-        function formatNumber(number) {
-            return new Intl.NumberFormat('es-CO').format(number);
-        }
-
-        function formatDate(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('es-CO');
-        }
-
-        function formatMonth(monthString) {
-            const [year, month] = monthString.split('-');
-            const monthNames = [
-                'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
-                'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'
-            ];
-            return `${monthNames[parseInt(month) - 1]} ${year}`;
-        }
-
-        function generateColors(count) {
-            const colors = [
-                '#667eea', '#764ba2', '#f093fb', '#f5576c',
-                '#4facfe', '#00f2fe', '#43e97b', '#38f9d7',
-                '#ffecd2', '#fcb69f', '#a8edea', '#fed6e3',
-                '#ff9a9e', '#fecfef', '#ffecd2', '#fcb69f'
-            ];
-            
-            const result = [];
-            for (let i = 0; i < count; i++) {
-                result.push(colors[i % colors.length]);
-            }
-            return result;
-        }
-
-        function showAlert(message, type) {
-            // Crear elemento de alerta
-            const alert = document.createElement('div');
-            alert.className = `alert alert-${type}`;
-            alert.textContent = message;
-            
-            // Insertar al inicio del contenido
-            const content = document.querySelector('.content');
-            content.insertBefore(alert, content.firstChild);
-            
-            // Remover después de 3 segundos
-            setTimeout(() => {
-                alert.remove();
-            }, 3000);
-        }
-
-        // Datos de ejemplo para demostración
-        function loadSampleData() {
-            if (transactions.length === 0) {
-                // Agregar algunos tipos predefinidos de ejemplo
-                predefinedIncomes = [
-                    { type: 'Salario', description: 'Pago de Salario Mensual', amount: 1500000 },
-                    { type: 'Freelance', description: 'Trabajo Independiente', amount: 500000 },
-                    { type: 'Inversiones', description: 'Rendimientos de Inversión', amount: 200000 }
-                ];
-                
-                predefinedExpenses = [
-                    { type: 'Arriendo', description: 'Pago Arriendo Mensual', amount: 500000 },
-                    { type: 'Alimentación', description: 'Gastos de Alimentación', amount: 300000 },
-                    { type: 'Transporte', description: 'Gastos de Transporte', amount: 150000 },
-                    { type: 'Servicios', description: 'Servicios Públicos', amount: 200000 }
-                ];
-                
-                // Agregar algunas transacciones de ejemplo
-                const today = new Date();
-                const currentMonth = today.toISOString().split('T')[0].substring(0, 7);
-                
-                transactions = [
-                    {
-                        id: 1,
-                        date: `${currentMonth}-01`,
-                        type: 'Salario',
-                        description: 'Pago de Salario Mensual',
-                        amount: 1500000,
-                        movement: 'Ingreso'
-                    },
-                    { <
-                        id: 2,
-                        date: `${currentMonth}-05`,
-                        type: 'Arriendo',
-                        description: 'Pago Arriendo Mensual',
-                        amount: 500000,
-                        movement: 'Egreso'
-                    },
-                    {
-                        id: 3,
-                        date: `${currentMonth}-10`,
-                        type: 'Alimentación',
-                        description: 'Mercado Mensual',
-                        amount: 300000,
-                        movement: 'Egreso'
-                    }
-                ];
-                
-                saveData();
+        function updateExpenseDefaults() {
+            const selectedType = document.getElementById('expenseType').value;
+            const selectedExpense = predefinedExpenses.find(exp => exp.type === selectedType);
+            if (selectedExpense) {
+                document.getElementById('expenseDescription').value = selectedExpense.description;
+                document.getElementById('expenseAmount').value = selectedExpense.amount;
+            } else {
+                document.getElementById('expenseDescription').value = '';
+                document.getElementById('expenseAmount').value = '';
             }
         }
 
-        // Cargar datos de ejemplo al inicializar
-        setTimeout(loadSampleData, 1000);
+        // Formato de moneda
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('es-CO', {
+                style: 'currency',
+                currency: 'COP',
+                minimumFractionDigits: 0
+            }).format(amount);
+        }
     </script>
 </body>
 </html>
