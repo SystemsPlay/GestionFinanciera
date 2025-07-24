@@ -729,15 +729,51 @@
                     // credentials: 'omit' // Opcional, dependiendo de la configuración CORS de tu Apps Script
                 });
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    const errorText = await response.text();
+                    console.error(`HTTP error! status: ${response.status}, text: ${errorText}`);
+                    // Devuelve un objeto de error para que el llamador pueda manejarlo.
+                    return { status: 'error', message: `Error HTTP ${response.status}: ${errorText || response.statusText}` };
                 }
                 const data = await response.json();
                 console.log(`Fetched ${action} data:`, data); // Debugging
                 return data;
             } catch (error) {
                 console.error(`Error fetching ${action} data:`, error);
-                alert(`Error al cargar datos desde Google Sheets para ${action}. Revisa la consola para más detalles y asegúrate de que tu Apps Script esté desplegado correctamente.`);
-                return null;
+                alert(`Error al cargar datos desde Google Sheets para ${action}. Revisa la consola para más detalles y asegúrate de que tu Apps Script esté desplegado correctamente con acceso 'Cualquier usuario'.`);
+                // Asegura que siempre se devuelve un objeto con 'status' para evitar TypeError
+                return { status: 'error', message: 'Error de red o el Apps Script no es accesible.', details: error.toString() };
+            }
+        }
+
+        async function postData(action, payload) {
+            const url = new URL(SCRIPT_URL);
+            url.searchParams.append('action', action);
+            try {
+                const response = await fetch(url.toString(), {
+                    method: 'POST',
+                    mode: 'cors', // Ensure CORS is enabled
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error(`HTTP error! status: ${response.status}, text: ${errorText}`);
+                    // Devuelve un objeto de error
+                    return { status: 'error', message: `Error HTTP ${response.status}: ${errorText || response.statusText}` };
+                }
+                const data = await response.json();
+                console.log(`Posted ${action} data:`, data); // Debugging
+                if (data.status === 'error') {
+                     throw new Error(data.message || 'Error desconocido del script.');
+                }
+                return data;
+            } catch (error) {
+                console.error(`Error posting ${action} data:`, error);
+                alert(`Error al guardar datos en Google Sheets para ${action}. Revisa la consola para más detalles y asegúrate de que tu Apps Script esté desplegado correctamente con acceso 'Cualquier usuario'.`);
+                // Asegura que siempre se devuelve un objeto con 'status'
+                return { status: 'error', message: 'Error de red o el Apps Script no es accesible.', details: error.toString() };
             }
         }
 
