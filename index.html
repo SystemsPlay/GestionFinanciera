@@ -17,6 +17,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+            color: #333;
         }
 
         .login-container {
@@ -30,229 +31,247 @@
         .login-box {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
-            border-radius: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             padding: 40px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            text-align: center;
             width: 100%;
             max-width: 400px;
-            text-align: center;
+            transform: translateY(0);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .login-box.fade-out {
+            transform: translateY(-20px);
+            opacity: 0;
+            pointer-events: none;
         }
 
         .login-box h2 {
-            color: #333;
             margin-bottom: 30px;
-            font-size: 28px;
-            font-weight: 600;
+            color: #667eea;
+            font-size: 2em;
         }
 
-        .form-group {
+        .input-group {
             margin-bottom: 20px;
             text-align: left;
         }
 
-        .form-group label {
+        .input-group label {
             display: block;
             margin-bottom: 8px;
+            font-weight: bold;
             color: #555;
-            font-weight: 500;
         }
 
-        .form-group input {
+        .input-group input[type="text"],
+        .input-group input[type="password"] {
             width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e1e5e9;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: all 0.3s ease;
+            padding: 12px 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
         }
 
-        .form-group input:focus {
-            outline: none;
+        .input-group input[type="text"]:focus,
+        .input-group input[type="password"]:focus {
             border-color: #667eea;
-            box-shadow: 0 0 10px rgba(102, 126, 234, 0.2);
+            outline: none;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.5);
         }
 
-        .login-btn {
+        .login-button {
             width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 12px 20px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
             color: white;
             border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
+            border-radius: 8px;
+            font-size: 1.1em;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: background 0.3s ease, transform 0.2s ease;
         }
 
-        .login-btn:hover {
+        .login-button:hover {
+            background: linear-gradient(90deg, #764ba2, #667eea);
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
         }
 
-        .main-container {
-            display: none;
-            background: #f5f7fa;
-            min-height: 100vh;
+        .error-message {
+            color: #e74c3c;
+            margin-top: 15px;
+            font-weight: bold;
+            font-size: 0.95em;
         }
 
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px 0;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .header-content {
+        .dashboard-container {
+            display: none; /* Hidden by default */
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin: 20px auto;
             max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
         }
 
-        .logo {
-            font-size: 24px;
-            font-weight: 700;
+        header h1 {
+            color: #667eea;
+            font-size: 2.5em;
         }
 
         .user-info {
+            font-size: 1.1em;
+            color: #555;
             display: flex;
             align-items: center;
             gap: 15px;
         }
 
-        .logout-btn {
-            background: rgba(255, 255, 255, 0.2);
+        .user-info button {
+            background: #e74c3c;
             color: white;
             border: none;
-            padding: 8px 16px;
+            padding: 8px 15px;
             border-radius: 8px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: background 0.3s ease;
         }
 
-        .logout-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
+        .user-info button:hover {
+            background: #c0392b;
         }
 
-        .nav-tabs {
-            background: white;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 0 20px;
-        }
-
-        .nav-tabs-container {
-            max-width: 1200px;
-            margin: 0 auto;
+        .tabs {
             display: flex;
-            gap: 0;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
         }
 
-        .nav-tab {
+        .tab-button {
             padding: 15px 25px;
-            background: none;
-            border: none;
             cursor: pointer;
-            font-size: 16px;
-            font-weight: 500;
-            color: #666;
-            transition: all 0.3s ease;
-            border-bottom: 3px solid transparent;
+            border: none;
+            background-color: transparent;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #777;
+            transition: color 0.3s ease, border-bottom 0.3s ease;
         }
 
-        .nav-tab.active {
+        .tab-button.active {
             color: #667eea;
-            border-bottom-color: #667eea;
-        }
-
-        .nav-tab:hover {
-            color: #667eea;
-            background: rgba(102, 126, 234, 0.05);
-        }
-
-        .content {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 30px 20px;
+            border-bottom: 3px solid #667eea;
         }
 
         .tab-content {
             display: none;
+            padding-top: 20px;
         }
 
         .tab-content.active {
             display: block;
         }
 
-        .dashboard-stats {
+        .summary-cards {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
+            gap: 25px;
             margin-bottom: 30px;
         }
 
-        .stat-card {
-            background: white;
-            padding: 25px;
+        .card {
+            background: linear-gradient(135deg, #f0f4f8, #e0e7ed);
             border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             text-align: center;
-            transition: all 0.3s ease;
+            transition: transform 0.2s ease;
         }
 
-        .stat-card:hover {
+        .card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
         }
 
-        .stat-card h3 {
-            color: #666;
-            font-size: 14px;
-            font-weight: 600;
+        .card h3 {
+            color: #667eea;
             margin-bottom: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            font-size: 1.5em;
         }
 
-        .stat-card .amount {
-            font-size: 32px;
-            font-weight: 700;
-            margin-bottom: 5px;
+        .card p {
+            font-size: 2.2em;
+            font-weight: bold;
+            color: #444;
         }
 
-        .income { color: #28a745; }
-        .expense { color: #dc3545; }
-        .balance { color: #667eea; }
+        .card.income p {
+            color: #28a745;
+        }
 
-        .charts-container {
+        .card.expense p {
+            color: #dc3545;
+        }
+
+        .card.balance p {
+            color: #007bff;
+        }
+
+        .charts {
             display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
             margin-bottom: 30px;
         }
 
         .chart-card {
-            background: white;
-            padding: 25px;
+            background: rgba(255, 255, 255, 0.9);
             border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
 
         .chart-card h3 {
-            color: #333;
-            margin-bottom: 20px;
-            font-size: 18px;
-            font-weight: 600;
+            text-align: center;
+            margin-bottom: 15px;
+            color: #667eea;
         }
 
-        .form-container {
-            background: white;
-            padding: 30px;
+        .form-section {
+            background: rgba(255, 255, 255, 0.9);
             border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             margin-bottom: 30px;
+        }
+
+        .form-section h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.8em;
         }
 
         .form-row {
@@ -262,1287 +281,993 @@
             margin-bottom: 20px;
         }
 
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
         .form-group input,
         .form-group select,
         .form-group textarea {
             width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e1e5e9;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: all 0.3s ease;
+            padding: 12px 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
         }
 
         .form-group input:focus,
         .form-group select:focus,
         .form-group textarea:focus {
-            outline: none;
             border-color: #667eea;
-            box-shadow: 0 0 10px rgba(102, 126, 234, 0.2);
+            outline: none;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.5);
         }
 
-        .btn {
-            padding: 12px 24px;
+        .form-actions {
+            text-align: center;
+        }
+
+        .form-actions button {
+            padding: 12px 25px;
+            background: linear-gradient(90deg, #28a745, #218838);
+            color: white;
             border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
+            border-radius: 8px;
+            font-size: 1.1em;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: background 0.3s ease, transform 0.2s ease;
+            margin: 0 10px;
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+        .form-actions button.expense {
+            background: linear-gradient(90deg, #dc3545, #c82333);
         }
 
-        .btn-success {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            color: white;
-        }
-
-        .btn-danger {
-            background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
-            color: white;
-        }
-
-        .btn:hover {
+        .form-actions button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
 
-        .data-table {
-            background: white;
+        .transaction-list-section {
+            background: rgba(255, 255, 255, 0.9);
             border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
 
-        .table-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
+        .transaction-list-section h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.8em;
         }
 
-        .table-header h3 {
-            font-size: 18px;
-            font-weight: 600;
-        }
-
-        .table-filters {
-            padding: 20px;
-            border-bottom: 1px solid #e1e5e9;
-        }
-
-        .filters-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            align-items: end;
-        }
-
-        table {
+        .transaction-table {
             width: 100%;
             border-collapse: collapse;
+            margin-top: 20px;
         }
 
-        th, td {
-            padding: 15px;
+        .transaction-table th,
+        .transaction-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
             text-align: left;
-            border-bottom: 1px solid #e1e5e9;
         }
 
-        th {
-            background: #f8f9fa;
-            font-weight: 600;
-            color: #333;
+        .transaction-table th {
+            background-color: #f8f9fa;
+            color: #667eea;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.9em;
         }
 
-        tr:hover {
-            background: rgba(102, 126, 234, 0.05);
+        .transaction-table tbody tr:hover {
+            background-color: #f0f4f8;
         }
 
-        .amount-cell {
-            font-weight: 600;
-        }
-
-        .delete-btn {
-            background: #dc3545;
+        .transaction-table .delete-btn {
+            background: #e74c3c;
             color: white;
             border: none;
-            padding: 6px 12px;
-            border-radius: 6px;
+            padding: 6px 10px;
+            border-radius: 5px;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 0.9em;
+            transition: background 0.3s ease;
         }
 
-        .delete-btn:hover {
-            background: #c82333;
+        .transaction-table .delete-btn:hover {
+            background: #c0392b;
         }
 
-        .alert {
-            padding: 15px 20px;
-            margin-bottom: 20px;
-            border-radius: 10px;
-            font-weight: 500;
+        .transaction-table .income-amount {
+            color: #28a745;
+            font-weight: bold;
         }
 
-        .alert-success {
-            background: rgba(40, 167, 69, 0.1);
-            color: #155724;
-            border: 1px solid rgba(40, 167, 69, 0.2);
+        .transaction-table .expense-amount {
+            color: #dc3545;
+            font-weight: bold;
         }
 
-        .alert-error {
-            background: rgba(220, 53, 69, 0.1);
-            color: #721c24;
-            border: 1px solid rgba(220, 53, 69, 0.2);
+        /* Predefined Types Section Specific Styles */
+        .predefined-types-section {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
         }
 
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #666;
-        }
-
-        .spinner {
-            display: inline-block;
-            width: 40px;
-            height: 40px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 15px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 768px) {
-            .header-content {
-                flex-direction: column;
-                gap: 15px;
-            }
-
-            .nav-tabs-container {
-                flex-wrap: wrap;
-            }
-
-            .nav-tab {
-                padding: 12px 20px;
-                font-size: 14px;
-            }
-
-            .charts-container {
-                grid-template-columns: 1fr;
-            }
-
-            .dashboard-stats {
-                grid-template-columns: 1fr;
-            }
-
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-
-            .filters-row {
-                grid-template-columns: 1fr;
-            }
-
-            table {
-                font-size: 14px;
-            }
-
-            th, td {
-                padding: 10px 8px;
+        @media (min-width: 768px) {
+            .predefined-types-section {
+                grid-template-columns: 1fr 1fr; /* Two columns for larger screens */
             }
         }
 
-        .config-section {
-            background: white;
-            padding: 25px;
+        .predefined-list-container,
+        .add-predefined-form {
+            background: rgba(255, 255, 255, 0.9);
             border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .predefined-list-container h4,
+        .add-predefined-form h4 {
+            color: #667eea;
             margin-bottom: 20px;
+            font-size: 1.5em;
+            text-align: center;
         }
 
-        .config-section h3 {
-            color: #333;
-            margin-bottom: 20px;
-            font-size: 18px;
-            font-weight: 600;
-            border-bottom: 2px solid #667eea;
-            padding-bottom: 10px;
+        .predefined-list ul {
+            list-style: none;
+            padding: 0;
         }
 
-        .predefined-list {
-            max-height: 300px;
-            overflow-y: auto;
-            border: 1px solid #e1e5e9;
-            border-radius: 10px;
-            padding: 15px;
-        }
-
-        .predefined-item {
+        .predefined-list li {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px;
-            border-bottom: 1px solid #f0f0f0;
-            margin-bottom: 10px;
+            padding: 10px 0;
+            border-bottom: 1px dashed #eee;
         }
 
-        .predefined-item:last-child {
+        .predefined-list li:last-child {
             border-bottom: none;
-            margin-bottom: 0;
         }
 
-        .item-info {
-            flex: 1;
+        .predefined-item-info {
+            flex-grow: 1;
         }
 
-        .item-type {
-            font-weight: 600;
-            color: #333;
+        .predefined-item-info span {
+            font-weight: bold;
+            color: #444;
+        }
+        
+        .predefined-item-info input {
+            width: calc(100% - 10px);
+            padding: 5px;
+            margin: 2px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
         }
 
-        .item-description {
-            color: #666;
-            font-size: 14px;
+        .predefined-list button {
+            background: #f39c12; /* Edit */
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 8px;
+            transition: background 0.3s ease;
+        }
+        .predefined-list button.delete {
+            background: #e74c3c; /* Delete */
+        }
+        .predefined-list button.save {
+            background: #28a745; /* Save */
+        }
+        .predefined-list button:hover {
+            opacity: 0.9;
         }
 
-        .item-amount {
-            font-weight: 600;
-            color: #667eea;
-            margin-right: 10px;
+        .add-predefined-form .form-group label {
+            font-size: 0.95em;
         }
+        .add-predefined-form .form-group input,
+        .add-predefined-form .form-group select {
+            padding: 10px 12px;
+            font-size: 0.95em;
+        }
+
+        .add-predefined-form button {
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 100%;
+            padding: 12px 20px;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+        .add-predefined-form button:hover {
+            transform: translateY(-2px);
+            background: linear-gradient(90deg, #764ba2, #667eea);
+        }
+
     </style>
 </head>
 <body>
-    <div id="loginScreen" class="login-container">
+    <div class="login-container" id="loginContainer">
         <div class="login-box">
-            <h2>💰 Control Financiero</h2>
+            <h2>Iniciar Sesión</h2>
             <form id="loginForm">
-                <div class="form-group">
-                    <label for="username">Usuario</label>
-                    <input type="text" id="username" required>
+                <div class="input-group">
+                    <label for="username">Usuario:</label>
+                    <input type="text" id="username" name="username" required>
                 </div>
-                <div class="form-group">
-                    <label for="password">Contraseña</label>
-                    <input type="password" id="password" required>
+                <div class="input-group">
+                    <label for="password">Contraseña:</label>
+                    <input type="password" id="password" name="password" required>
                 </div>
-                <button type="submit" class="login-btn">Iniciar Sesión</button>
+                <button type="submit" class="login-button">Entrar</button>
+                <p id="loginMessage" class="error-message"></p>
             </form>
         </div>
     </div>
 
-    <div id="mainApp" class="main-container">
-        <div class="header">
-            <div class="header-content">
-                <div class="logo">💰 Control Financiero Personal</div>
-                <div class="user-info">
-                    <span id="welcomeUser">Bienvenido, Usuario</span>
-                    <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+    <div class="dashboard-container" id="dashboardContainer">
+        <header>
+            <h1>Control Financiero</h1>
+            <div class="user-info">
+                <span>Bienvenido, <span id="loggedInUser"></span></span>
+                <button id="logoutButton">Cerrar Sesión</button>
+            </div>
+        </header>
+
+        <nav class="tabs">
+            <button class="tab-button active" onclick="showTab('dashboard')">Dashboard</button>
+            <button class="tab-button" onclick="showTab('transactions')">Transacciones</button>
+            <button class="tab-button" onclick="showTab('addTransaction')">Agregar Transacción</button>
+            <button class="tab-button" onclick="showTab('predefinedTypesSection')">Tipos Predefinidos</button>
+        </nav>
+
+        <div id="dashboard" class="tab-content active">
+            <div class="summary-cards">
+                <div class="card income">
+                    <h3>Total Ingresos</h3>
+                    <p id="totalIncome">$0.00</p>
+                </div>
+                <div class="card expense">
+                    <h3>Total Egresos</h3>
+                    <p id="totalExpense">$0.00</p>
+                </div>
+                <div class="card balance">
+                    <h3>Balance Actual</h3>
+                    <p id="currentBalance">$0.00</p>
+                </div>
+            </div>
+
+            <div class="charts">
+                <div class="chart-card">
+                    <h3>Ingresos vs Egresos por Mes</h3>
+                    <canvas id="lineChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>Distribución de Egresos</h3>
+                    <canvas id="pieChart"></canvas>
                 </div>
             </div>
         </div>
 
-        <div class="nav-tabs">
-            <div class="nav-tabs-container">
-                <button class="nav-tab active" onclick="showTab('dashboard')">📊 Dashboard</button>
-                <button class="nav-tab" onclick="showTab('income')">💵 Ingresos</button>
-                <button class="nav-tab" onclick="showTab('expense')">💸 Egresos</button>
-                <button class="nav-tab" onclick="showTab('general')">📋 General</button>
-                <button class="nav-tab" onclick="showTab('config')">⚙️ Configuración</button>
+        <div id="transactions" class="tab-content">
+            <div class="transaction-list-section">
+                <h3>Historial de Transacciones</h3>
+                <table class="transaction-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Movimiento</th>
+                            <th>Tipo</th>
+                            <th>Descripción</th>
+                            <th>Monto</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactionsTableBody">
+                        </tbody>
+                </table>
             </div>
         </div>
 
-        <div class="content">
-            <div id="dashboard" class="tab-content active">
-                <div class="dashboard-stats">
-                    <div class="stat-card">
-                        <h3>Total Ingresos</h3>
-                        <div class="amount income" id="totalIncome">$0</div>
+        <div id="addTransaction" class="tab-content">
+            <div class="form-section">
+                <h3>Agregar Nuevo Movimiento</h3>
+                <form id="transactionForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="transactionDate">Fecha:</label>
+                            <input type="date" id="transactionDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="transactionMovement">Movimiento:</label>
+                            <select id="transactionMovement" required onchange="filterTransactionTypes()">
+                                <option value="">Seleccione</option>
+                                <option value="Ingreso">Ingreso</option>
+                                <option value="Egreso">Egreso</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="transactionType">Tipo:</label>
+                            <select id="transactionType" required>
+                                <option value="">Seleccione un movimiento primero</option>
+                            </select>
+                        </div>
                     </div>
-                    <div class="stat-card">
-                        <h3>Total Egresos</h3>
-                        <div class="amount expense" id="totalExpense">$0</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="transactionDescription">Descripción:</label>
+                            <textarea id="transactionDescription" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="transactionAmount">Monto:</label>
+                            <input type="number" id="transactionAmount" step="0.01" required>
+                        </div>
                     </div>
-                    <div class="stat-card">
-                        <h3>Balance</h3>
-                        <div class="amount balance" id="totalBalance">$0</div>
+                    <div class="form-actions">
+                        <button type="submit">Agregar Transacción</button>
                     </div>
-                    <div class="stat-card">
-                        <h3>Transacciones</h3>
-                        <div class="amount" id="totalTransactions">0</div>
-                    </div>
-                </div>
-
-                <div class="charts-container">
-                    <div class="chart-card">
-                        <h3>Evolución Mensual</h3>
-                        <canvas id="lineChart"></canvas>
-                    </div>
-                    <div class="chart-card">
-                        <h3>Distribución por Categoría</h3>
-                        <canvas id="pieChart"></canvas>
-                    </div>
-                </div>
+                </form>
             </div>
+        </div>
 
-            <div id="income" class="tab-content">
-                <div class="form-container">
-                    <h3>Registrar Ingreso</h3>
-                    <form id="incomeForm">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Fecha</label>
-                                <input type="date" id="incomeDate" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Tipo</label>
-                                <select id="incomeType" required onchange="updateIncomeDefaults()">
-                                    <option value="">Seleccionar tipo</option>
-                                </select>
-                            </div>
+        <div id="predefinedTypesSection" class="tab-content">
+            <h2>Gestión de Tipos Predefinidos</h2>
+            <div class="predefined-types-section">
+                <div class="add-predefined-form">
+                    <h4>Agregar Nuevo Tipo Predefinido</h4>
+                    <form id="addPredefinedForm">
+                        <div class="form-group">
+                            <label for="predefinedTypeMovement">Movimiento:</label>
+                            <select id="predefinedTypeMovement" required>
+                                <option value="">Seleccione</option>
+                                <option value="Ingreso">Ingreso</option>
+                                <option value="Egreso">Egreso</option>
+                            </select>
                         </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Descripción</label>
-                                <input type="text" id="incomeDescription" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Monto</label>
-                                <input type="number" id="incomeAmount" step="0.01" required>
-                            </div>
+                        <div class="form-group">
+                            <label for="predefinedTypeName">Nombre del Tipo:</label>
+                            <input type="text" id="predefinedTypeName" required>
                         </div>
-                        <button type="submit" class="btn btn-success">Registrar Ingreso</button>
+                        <div class="form-group">
+                            <label for="predefinedTypeDescription">Descripción (opcional):</label>
+                            <input type="text" id="predefinedTypeDescription">
+                        </div>
+                        <div class="form-group">
+                            <label for="predefinedTypeAmount">Monto Sugerido (opcional):</label>
+                            <input type="number" id="predefinedTypeAmount" step="0.01">
+                        </div>
+                        <button type="submit">Guardar Tipo Predefinido</button>
                     </form>
                 </div>
 
-                <div class="data-table">
-                    <div class="table-header">
-                        <h3>Historial de Ingresos</h3>
-                    </div>
-                    <div style="overflow-x: auto;">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Fecha</th>
-                                    <th>Tipo</th>
-                                    <th>Descripción</th>
-                                    <th>Monto</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="incomeTableBody">
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div id="expense" class="tab-content">
-                <div class="form-container">
-                    <h3>Registrar Egreso</h3>
-                    <form id="expenseForm">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Fecha</label>
-                                <input type="date" id="expenseDate" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Tipo</label>
-                                <select id="expenseType" required onchange="updateExpenseDefaults()">
-                                    <option value="">Seleccionar tipo</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Descripción</label>
-                                <input type="text" id="expenseDescription" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Monto</label>
-                                <input type="number" id="expenseAmount" step="0.01" required>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-danger">Registrar Egreso</button>
-                    </form>
-                </div>
-
-                <div class="data-table">
-                    <div class="table-header">
-                        <h3>Historial de Egresos</h3>
-                    </div>
-                    <div style="overflow-x: auto;">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Fecha</th>
-                                    <th>Tipo</th>
-                                    <th>Descripción</th>
-                                    <th>Monto</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="expenseTableBody">
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div id="general" class="tab-content">
-                <div class="data-table">
-                    <div class="table-header">
-                        <h3>Todos los Movimientos</h3>
-                    </div>
-                    <div class="table-filters">
-                        <div class="filters-row">
-                            <div class="form-group">
-                                <label>Movimiento</label>
-                                <select id="filterMovement">
-                                    <option value="">Todos</option>
-                                    <option value="Ingreso">Ingresos</option>
-                                    <option value="Egreso">Egresos</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Tipo</label>
-                                <select id="filterType">
-                                    <option value="">Todos</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Fecha Desde</label>
-                                <input type="date" id="filterDateFrom">
-                            </div>
-                            <div class="form-group">
-                                <label>Fecha Hasta</label>
-                                <input type="date" id="filterDateTo">
-                            </div>
-                            <div class="form-group">
-                                <button class="btn btn-primary" onclick="applyFilters()">Filtrar</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div style="overflow-x: auto;">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Fecha</th>
-                                    <th>Movimiento</th>
-                                    <th>Tipo</th>
-                                    <th>Descripción</th>
-                                    <th>Monto</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="generalTableBody">
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div id="config" class="tab-content">
-                <div class="config-section">
-                    <h3>Tipos de Ingresos Predefinidos</h3>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Tipo</label>
-                            <input type="text" id="newIncomeType" placeholder="Ej: Salario">
-                        </div>
-                        <div class="form-group">
-                            <label>Descripción</label>
-                            <input type="text" id="newIncomeDescription" placeholder="Ej: Pago de Salario Mensual">
-                        </div>
-                        <div class="form-group">
-                            <label>Monto</label>
-                            <input type="number" id="newIncomeAmount" step="0.01" placeholder="1500000">
-                        </div>
-                        <div class="form-group">
-                            <button class="btn btn-success" onclick="addPredefinedIncome()">Agregar</button>
-                        </div>
-                    </div>
-                    <div class="predefined-list" id="incomeList">
-                    </div>
-                </div>
-
-                <div class="config-section">
-                    <h3>Tipos de Egresos Predefinidos</h3>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Tipo</label>
-                            <input type="text" id="newExpenseType" placeholder="Ej: Arriendo">
-                        </div>
-                        <div class="form-group">
-                            <label>Descripción</label>
-                            <input type="text" id="newExpenseDescription" placeholder="Ej: Pago Arriendo Mensual">
-                        </div>
-                        <div class="form-group">
-                            <label>Monto</label>
-                            <input type="number" id="newExpenseAmount" step="0.01" placeholder="500000">
-                        </div>
-                        <div class="form-group">
-                            <button class="btn btn-danger" onclick="addPredefinedExpense()">Agregar</button>
-                        </div>
-                    </div>
-                    <div class="predefined-list" id="expenseList">
-                    </div>
+                <div class="predefined-list-container">
+                    <h4>Tipos de Ingreso Predefinidos</h4>
+                    <ul id="predefinedIncomesList" class="predefined-list">
+                        </ul>
+                    <h4 style="margin-top: 30px;">Tipos de Egreso Predefinidos</h4>
+                    <ul id="predefinedExpensesList" class="predefined-list">
+                        </ul>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Variables globales
-        let currentUser = '';
+        // ¡IMPORTANTE! Reemplaza 'YOUR_WEB_APP_URL_AQUI' con la URL real de tu Google Apps Script
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbymBcf4ut-aL3DJshdpiO5t3UEEJiIT8PmWVPYqSIl_-nW8PST_BoZVmHVV2vlZsBM36w/exec'; 
+
         let transactions = [];
         let predefinedIncomes = [];
         let predefinedExpenses = [];
-        // Apps Script URL hardcoded as per user request
-        let sheetsConfig = 'https://script.google.com/macros/s/AKfycbymBcf4ut-aL3DJshdpiO5t3UEEJiIT8PmWVPYqSIl_-nW8PST_BoZVmHVV2vlZsBM36w/exec';
-        
-        // Configuración de usuario por defecto (en un entorno real, esto estaría en un servidor o se integraría con Google Sheets)
-        const users = {
-            'admin': 'admin123',
-            'usuario': 'password'
-        };
+        let loggedInUser = null;
 
-        // Inicialización
-        document.addEventListener('DOMContentLoaded', function() {
-            loadStoredData();
-            setupEventListeners();
-            setDefaultDates();
-        });
+        // Chart instances
+        window.lineChart = null;
+        window.pieChart = null;
 
-        function setupEventListeners() {
-            // Login form
-            document.getElementById('loginForm').addEventListener('submit', handleLogin);
-            
-            // Forms
-            document.getElementById('incomeForm').addEventListener('submit', handleIncomeSubmit);
-            document.getElementById('expenseForm').addEventListener('submit', handleExpenseSubmit);
-            
-            // Filters
-            document.getElementById('filterMovement').addEventListener('change', applyFilters);
-            document.getElementById('filterType').addEventListener('change', applyFilters);
-            document.getElementById('filterDateFrom').addEventListener('change', applyFilters);
-            document.getElementById('filterDateTo').addEventListener('change', applyFilters);
+        // DOM Elements
+        const loginContainer = document.getElementById('loginContainer');
+        const dashboardContainer = document.getElementById('dashboardContainer');
+        const loginForm = document.getElementById('loginForm');
+        const loginMessage = document.getElementById('loginMessage');
+        const logoutButton = document.getElementById('logoutButton');
+        const loggedInUserSpan = document.getElementById('loggedInUser');
+
+        const totalIncomeElem = document.getElementById('totalIncome');
+        const totalExpenseElem = document.getElementById('totalExpense');
+        const currentBalanceElem = document.getElementById('currentBalance');
+        const transactionsTableBody = document.getElementById('transactionsTableBody');
+
+        const transactionForm = document.getElementById('transactionForm');
+        const transactionDateInput = document.getElementById('transactionDate');
+        const transactionMovementSelect = document.getElementById('transactionMovement');
+        const transactionTypeSelect = document.getElementById('transactionType');
+        const transactionDescriptionInput = document.getElementById('transactionDescription');
+        const transactionAmountInput = document.getElementById('transactionAmount');
+
+        const addPredefinedForm = document.getElementById('addPredefinedForm');
+        const predefinedTypeMovementSelect = document.getElementById('predefinedTypeMovement');
+        const predefinedTypeNameInput = document.getElementById('predefinedTypeName');
+        const predefinedTypeDescriptionInput = document.getElementById('predefinedTypeDescription');
+        const predefinedTypeAmountInput = document.getElementById('predefinedTypeAmount');
+        const predefinedIncomesList = document.getElementById('predefinedIncomesList');
+        const predefinedExpensesList = document.getElementById('predefinedExpensesList');
+
+        // --- Core Functions for Google Apps Script Interaction ---
+
+        async function fetchData(action, params = {}) {
+            const url = new URL(SCRIPT_URL);
+            url.searchParams.append('action', action);
+            for (const key in params) {
+                url.searchParams.append(key, params[key]);
+            }
+            try {
+                const response = await fetch(url.toString(), {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    // credentials: 'omit' // Opcional, dependiendo de la configuración CORS de tu Apps Script
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                console.log(`Fetched ${action} data:`, data); // Debugging
+                return data;
+            } catch (error) {
+                console.error(`Error fetching ${action} data:`, error);
+                alert(`Error al cargar datos desde Google Sheets para ${action}. Revisa la consola para más detalles y asegúrate de que tu Apps Script esté desplegado correctamente.`);
+                return null;
+            }
         }
 
-        function setDefaultDates() {
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('incomeDate').value = today;
-            document.getElementById('expenseDate').value = today;
+        async function postData(action, payload) {
+            const url = new URL(SCRIPT_URL);
+            url.searchParams.append('action', action);
+            try {
+                const response = await fetch(url.toString(), {
+                    method: 'POST',
+                    mode: 'cors', // Ensure CORS is enabled
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                console.log(`Posted ${action} data:`, data); // Debugging
+                if (data.status === 'error') {
+                     throw new Error(data.message || 'Error desconocido del script.');
+                }
+                return data;
+            } catch (error) {
+                console.error(`Error posting ${action} data:`, error);
+                alert(`Error al guardar datos en Google Sheets para ${action}. Revisa la consola para más detalles y asegúrate de que tu Apps Script esté desplegado correctamente.`);
+                return null;
+            }
         }
 
-        // Sistema de Login
-        function handleLogin(e) {
-            e.preventDefault();
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            
-            if (users[username] && users[username] === password) {
-                currentUser = username;
-                document.getElementById('welcomeUser').textContent = `Bienvenido, ${username}`;
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('mainApp').style.display = 'block';
-                loadData();
+        // --- Authentication ---
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            const username = loginForm.username.value;
+            const password = loginForm.password.value;
+
+            loginMessage.textContent = 'Iniciando sesión...';
+            try {
+                const result = await fetchData('authenticateUser', { username, password });
+
+                if (result && result.authenticated) {
+                    loggedInUser = result.user;
+                    loggedInUserSpan.textContent = loggedInUser;
+                    loginMessage.textContent = '';
+                    loginContainer.classList.add('fade-out');
+                    setTimeout(() => {
+                        loginContainer.style.display = 'none';
+                        dashboardContainer.style.display = 'block';
+                        loadData(); // Load data after successful login
+                    }, 500); // Wait for fade-out animation
+                } else {
+                    loginMessage.textContent = result.message || 'Usuario o contraseña incorrectos.';
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                loginMessage.textContent = 'Error al intentar iniciar sesión. Revisa tu conexión o el Apps Script.';
+            }
+        }
+
+        function handleLogout() {
+            loggedInUser = null;
+            transactions = [];
+            predefinedIncomes = [];
+            predefinedExpenses = [];
+            loginForm.reset();
+            dashboardContainer.style.display = 'none';
+            loginContainer.classList.remove('fade-out'); // Remove fade-out class
+            loginContainer.style.display = 'flex'; // Show login container
+            loginMessage.textContent = '';
+            // Destroy charts if they exist
+            if (window.lineChart instanceof Chart) {
+                window.lineChart.destroy();
+                window.lineChart = null;
+            }
+            if (window.pieChart instanceof Chart) {
+                window.pieChart.destroy();
+                window.pieChart = null;
+            }
+            showTab('dashboard'); // Reset to dashboard tab
+        }
+
+        // --- Data Loading & Rendering ---
+
+        async function loadData() {
+            // Fetch transactions
+            const fetchedTransactions = await fetchData('getAllTransactions');
+            if (fetchedTransactions) {
+                transactions = fetchedTransactions;
             } else {
-                alert('Usuario o contraseña incorrectos');
+                transactions = []; // Ensure it's an array even on error
             }
-        }
 
-        function logout() {
-            currentUser = '';
-            document.getElementById('loginScreen').style.display = 'flex';
-            document.getElementById('mainApp').style.display = 'none';
-            document.getElementById('loginForm').reset();
-        }
-
-        // Navegación entre tabs
-        function showTab(tabName) {
-            // Ocultar todos los tabs
-            const tabContents = document.querySelectorAll('.tab-content');
-            tabContents.forEach(tab => tab.classList.remove('active'));
-            
-            // Remover clase active de todos los botones
-            const tabButtons = document.querySelectorAll('.nav-tab');
-            tabButtons.forEach(btn => btn.classList.remove('active'));
-            
-            // Mostrar tab seleccionado
-            document.getElementById(tabName).classList.add('active');
-            event.target.classList.add('active');
-            
-            // Actualizar gráficos si es dashboard
-            if (tabName === 'dashboard') {
-                setTimeout(() => {
-                    updateDashboard();
-                }, 100);
+            // Fetch predefined types
+            const fetchedPredefined = await fetchData('getPredefinedTypes');
+            if (fetchedPredefined) {
+                predefinedIncomes = fetchedPredefined.incomes;
+                predefinedExpenses = fetchedPredefined.expenses;
+            } else {
+                predefinedIncomes = [];
+                predefinedExpenses = [];
             }
-        }
-
-        // Gestión de datos
-        function loadStoredData() {
-            const storedTransactions = JSON.parse(localStorage.getItem('transactions') || '[]');
-            const storedPredefinedIncomes = JSON.parse(localStorage.getItem('predefinedIncomes') || '[]');
-            const storedPredefinedExpenses = JSON.parse(localStorage.getItem('predefinedExpenses') || '[]');
-            // sheetsConfig is now hardcoded, no longer loaded from localStorage
             
-            transactions = storedTransactions;
-            predefinedIncomes = storedPredefinedIncomes;
-            predefinedExpenses = storedPredefinedExpenses;
-            
-            // No need to set value to sheetsUrl input as it's removed
-        }
-
-        function saveData() {
-            localStorage.setItem('transactions', JSON.stringify(transactions));
-            localStorage.setItem('predefinedIncomes', JSON.stringify(predefinedIncomes));
-            localStorage.setItem('predefinedExpenses', JSON.stringify(predefinedExpenses));
-            // sheetsConfig is now hardcoded, no longer saved to localStorage
-        }
-
-        function loadData() {
-            updatePredefinedSelects();
-            updateTables();
             updateDashboard();
-            updatePredefinedLists();
-            updateFilterTypes();
+            renderTransactions();
+            renderPredefinedTypes();
+            filterTransactionTypes(); // Populate transaction type dropdowns
         }
 
-        // Manejo de ingresos
-        function handleIncomeSubmit(e) {
-            e.preventDefault();
-            
-            const income = {
-                id: Date.now(),
-                date: document.getElementById('incomeDate').value,
-                type: document.getElementById('incomeType').value,
-                description: document.getElementById('incomeDescription').value,
-                amount: parseFloat(document.getElementById('incomeAmount').value),
-                movement: 'Ingreso'
-            };
-            
-            transactions.push(income);
-            saveData();
-            syncWithGoogleSheets(income);
-            updateTables();
-            updateDashboard();
-            document.getElementById('incomeForm').reset();
-            setDefaultDates();
-            showAlert('Ingreso registrado exitosamente', 'success');
-        }
-
-        // Manejo de egresos
-        function handleExpenseSubmit(e) {
-            e.preventDefault();
-            
-            const expense = {
-                id: Date.now(),
-                date: document.getElementById('expenseDate').value,
-                type: document.getElementById('expenseType').value,
-                description: document.getElementById('expenseDescription').value,
-                amount: parseFloat(document.getElementById('expenseAmount').value),
-                movement: 'Egreso'
-            };
-            
-            transactions.push(expense);
-            saveData();
-            syncWithGoogleSheets(expense);
-            updateTables();
-            updateDashboard();
-            document.getElementById('expenseForm').reset();
-            setDefaultDates();
-            showAlert('Egreso registrado exitosamente', 'success');
-        }
-
-        // Actualizar valores por defecto
-        function updateIncomeDefaults() {
-            const selectedType = document.getElementById('incomeType').value;
-            const predefined = predefinedIncomes.find(item => item.type === selectedType);
-            
-            if (predefined) {
-                document.getElementById('incomeDescription').value = predefined.description;
-                document.getElementById('incomeAmount').value = predefined.amount;
-            }
-        }
-
-        function updateExpenseDefaults() {
-            const selectedType = document.getElementById('expenseType').value;
-            const predefined = predefinedExpenses.find(item => item.type === selectedType);
-            
-            if (predefined) {
-                document.getElementById('expenseDescription').value = predefined.description;
-                document.getElementById('expenseAmount').value = predefined.amount;
-            }
-        }
-
-        // Actualizar selects con tipos predefinidos
-        function updatePredefinedSelects() {
-            const incomeSelect = document.getElementById('incomeType');
-            const expenseSelect = document.getElementById('expenseType');
-            
-            // Limpiar opciones
-            incomeSelect.innerHTML = '<option value="">Seleccionar tipo</option>';
-            expenseSelect.innerHTML = '<option value="">Seleccionar tipo</option>';
-            
-            // Agregar tipos de ingresos
-            predefinedIncomes.forEach(income => {
-                const option = document.createElement('option');
-                option.value = income.type;
-                option.textContent = income.type;
-                incomeSelect.appendChild(option);
-            });
-            
-            // Agregar tipos de egresos
-            predefinedExpenses.forEach(expense => {
-                const option = document.createElement('option');
-                option.value = expense.type;
-                option.textContent = expense.type;
-                expenseSelect.appendChild(option);
-            });
-        }
-
-        // Actualizar filtros de tipo
-        function updateFilterTypes() {
-            const filterTypeSelect = document.getElementById('filterType');
-            filterTypeSelect.innerHTML = '<option value="">Todos</option>';
-            
-            const allTypes = new Set();
-            transactions.forEach(transaction => {
-                allTypes.add(transaction.type);
-            });
-            
-            Array.from(allTypes).sort().forEach(type => {
-                const option = document.createElement('option');
-                option.value = type;
-                option.textContent = type;
-                filterTypeSelect.appendChild(option);
-            });
-        }
-
-        // Actualizar tablas
-        function updateTables() {
-            updateIncomeTable();
-            updateExpenseTable();
-            updateGeneralTable();
-            updateFilterTypes();
-        }
-
-        function updateIncomeTable() {
-            const tbody = document.getElementById('incomeTableBody');
-            const incomes = transactions.filter(t => t.movement === 'Ingreso');
-            
-            tbody.innerHTML = '';
-            incomes.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(income => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${formatDate(income.date)}</td>
-                    <td>${income.type}</td>
-                    <td>${income.description}</td>
-                    <td class="amount-cell income">${formatNumber(income.amount)}</td>
-                    <td><button class="delete-btn" onclick="deleteTransaction(${income.id})">Eliminar</button></td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        function updateExpenseTable() {
-            const tbody = document.getElementById('expenseTableBody');
-            const expenses = transactions.filter(t => t.movement === 'Egreso');
-            
-            tbody.innerHTML = '';
-            expenses.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(expense => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${formatDate(expense.date)}</td>
-                    <td>${expense.type}</td>
-                    <td>${expense.description}</td>
-                    <td class="amount-cell expense">${formatNumber(expense.amount)}</td>
-                    <td><button class="delete-btn" onclick="deleteTransaction(${expense.id})">Eliminar</button></td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        function updateGeneralTable() {
-            applyFilters();
-        }
-
-        // Aplicar filtros
-        function applyFilters() {
-            const movementFilter = document.getElementById('filterMovement').value;
-            const typeFilter = document.getElementById('filterType').value;
-            const dateFromFilter = document.getElementById('filterDateFrom').value;
-            const dateToFilter = document.getElementById('filterDateTo').value;
-            
-            let filteredTransactions = [...transactions];
-            
-            if (movementFilter) {
-                filteredTransactions = filteredTransactions.filter(t => t.movement === movementFilter);
-            }
-            
-            if (typeFilter) {
-                filteredTransactions = filteredTransactions.filter(t => t.type === typeFilter);
-            }
-            
-            if (dateFromFilter) {
-                filteredTransactions = filteredTransactions.filter(t => t.date >= dateFromFilter);
-            }
-            
-            if (dateToFilter) {
-                filteredTransactions = filteredTransactions.filter(t => t.date <= dateToFilter);
-            }
-            
-            const tbody = document.getElementById('generalTableBody');
-            tbody.innerHTML = '';
-            
-            filteredTransactions.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(transaction => {
-                const row = document.createElement('tr');
-                const amountClass = transaction.movement === 'Ingreso' ? 'income' : 'expense';
-                row.innerHTML = `
-                    <td>${formatDate(transaction.date)}</td>
-                    <td>${transaction.movement}</td>
-                    <td>${transaction.type}</td>
-                    <td>${transaction.description}</td>
-                    <td class="amount-cell ${amountClass}">${formatNumber(transaction.amount)}</td>
-                    <td><button class="delete-btn" onclick="deleteTransaction(${transaction.id})">Eliminar</button></td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        // Eliminar transacción
-        function deleteTransaction(id) {
-            if (confirm('¿Estás seguro de eliminar esta transacción?')) {
-                transactions = transactions.filter(t => t.id !== id);
-                saveData();
-                updateTables();
-                updateDashboard();
-                showAlert('Transacción eliminada exitosamente', 'success');
-            }
-        }
-
-        // Dashboard y estadísticas
         function updateDashboard() {
-            const incomes = transactions.filter(t => t.movement === 'Ingreso');
-            const expenses = transactions.filter(t => t.movement === 'Egreso');
-            
-            const totalIncome = incomes.reduce((sum, t) => sum + t.amount, 0);
-            const totalExpense = expenses.reduce((sum, t) => sum + t.amount, 0);
-            const balance = totalIncome - totalExpense;
-            
-            document.getElementById('totalIncome').textContent = `${formatNumber(totalIncome)}`;
-            document.getElementById('totalExpense').textContent = `${formatNumber(totalExpense)}`;
-            document.getElementById('totalBalance').textContent = `${formatNumber(balance)}`;
-            document.getElementById('totalTransactions').textContent = transactions.length;
-            
-            // Actualizar clase de balance
-            const balanceElement = document.getElementById('totalBalance');
-            balanceElement.className = `amount ${balance >= 0 ? 'income' : 'expense'}`;
-            
+            const totalIncome = transactions.filter(t => t.movement === 'Ingreso').reduce((sum, t) => sum + t.amount, 0);
+            const totalExpense = transactions.filter(t => t.movement === 'Egreso').reduce((sum, t) => sum + t.amount, 0);
+            const currentBalance = totalIncome - totalExpense;
+
+            totalIncomeElem.textContent = formatCurrency(totalIncome);
+            totalExpenseElem.textContent = formatCurrency(totalExpense);
+            currentBalanceElem.textContent = formatCurrency(currentBalance);
+
             updateCharts();
         }
 
-        // Gráficos
-        function updateCharts() {
-            updateLineChart();
-            updatePieChart();
+        function renderTransactions() {
+            transactionsTableBody.innerHTML = '';
+            transactions.sort((a, b) => new Date(b.date) - new Date(a.date)); // Sort by date descending
+
+            transactions.forEach(transaction => {
+                const row = transactionsTableBody.insertRow();
+                row.innerHTML = `
+                    <td>${transaction.date}</td>
+                    <td>${transaction.movement}</td>
+                    <td>${transaction.type}</td>
+                    <td>${transaction.description}</td>
+                    <td class="${transaction.movement === 'Ingreso' ? 'income-amount' : 'expense-amount'}">${formatCurrency(transaction.amount)}</td>
+                    <td>
+                        <button class="delete-btn" onclick="deleteTransaction('${transaction.id}')">Eliminar</button>
+                    </td>
+                `;
+            });
         }
 
-        function updateLineChart() {
-            const ctx = document.getElementById('lineChart').getContext('2d');
+        async function deleteTransaction(id) {
+            if (!confirm('¿Estás seguro de que quieres eliminar esta transacción?')) {
+                return;
+            }
+
+            const result = await postData('deleteTransaction', { id: id });
+            if (result && result.status === 'success') {
+                transactions = transactions.filter(t => t.id !== id);
+                updateDashboard();
+                renderTransactions();
+                alert('Transacción eliminada con éxito.');
+            } else {
+                alert('Error al eliminar la transacción.');
+            }
+        }
+
+
+        // --- Transaction Form Handling ---
+
+        function filterTransactionTypes() {
+            const movement = transactionMovementSelect.value;
+            transactionTypeSelect.innerHTML = '<option value="">Seleccione</option>';
+
+            if (movement === 'Ingreso') {
+                predefinedIncomes.forEach(type => {
+                    const option = document.createElement('option');
+                    option.value = type.type;
+                    option.textContent = type.type;
+                    transactionTypeSelect.appendChild(option);
+                });
+            } else if (movement === 'Egreso') {
+                predefinedExpenses.forEach(type => {
+                    const option = document.createElement('option');
+                    option.value = type.type;
+                    option.textContent = type.type;
+                    transactionTypeSelect.appendChild(option);
+                });
+            }
+        }
+
+        async function handleTransactionSubmit(event) {
+            event.preventDefault();
+
+            const newTransaction = {
+                date: transactionDateInput.value,
+                movement: transactionMovementSelect.value,
+                type: transactionTypeSelect.value,
+                description: transactionDescriptionInput.value,
+                amount: parseFloat(transactionAmountInput.value)
+            };
+
+            if (isNaN(newTransaction.amount) || newTransaction.amount <= 0) {
+                alert('Por favor, ingresa un monto válido y positivo.');
+                return;
+            }
+
+            const result = await postData('addTransaction', newTransaction);
+            if (result && result.status === 'success') {
+                // Re-fetch all data to get the new transaction with its ID (timestamp) from Apps Script
+                await loadData(); 
+                alert('Transacción agregada con éxito!');
+                transactionForm.reset();
+                showTab('dashboard'); // Go back to dashboard after adding
+            } else {
+                alert('Error al agregar la transacción.');
+            }
+        }
+
+        // --- Predefined Types Management ---
+
+        function renderPredefinedTypes() {
+            predefinedIncomesList.innerHTML = '';
+            predefinedExpensesList.innerHTML = '';
+
+            // Render Incomes
+            predefinedIncomes.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.setAttribute('data-index', index); // Store index for editing
+                li.setAttribute('data-movement', 'Ingreso'); // Store movement for identification
+                li.innerHTML = `
+                    <div class="predefined-item-info">
+                        <span>${item.type}</span> 
+                        <span style="font-weight: normal; font-size: 0.9em; color: #777;">(${item.description || 'Sin descripción'})</span>
+                        ${item.amount ? ` - ${formatCurrency(item.amount)}` : ''}
+                    </div>
+                    <div>
+                        <button onclick="toggleEditPredefined(this, 'Ingreso')">Editar</button>
+                        <button class="delete" onclick="deletePredefined('${item.type}', 'Ingreso')">Eliminar</button>
+                    </div>
+                `;
+                predefinedIncomesList.appendChild(li);
+            });
+
+            // Render Expenses
+            predefinedExpenses.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.setAttribute('data-index', index); // Store index for editing
+                li.setAttribute('data-movement', 'Egreso'); // Store movement for identification
+                li.innerHTML = `
+                    <div class="predefined-item-info">
+                        <span>${item.type}</span>
+                        <span style="font-weight: normal; font-size: 0.9em; color: #777;">(${item.description || 'Sin descripción'})</span>
+                        ${item.amount ? ` - ${formatCurrency(item.amount)}` : ''}
+                    </div>
+                    <div>
+                        <button onclick="toggleEditPredefined(this, 'Egreso')">Editar</button>
+                        <button class="delete" onclick="deletePredefined('${item.type}', 'Egreso')">Eliminar</button>
+                    </div>
+                `;
+                predefinedExpensesList.appendChild(li);
+            });
+        }
+
+        async function handleAddPredefinedType(event) {
+            event.preventDefault();
+
+            const newPredefined = {
+                movement: predefinedTypeMovementSelect.value,
+                type: predefinedTypeNameInput.value.trim(),
+                description: predefinedTypeDescriptionInput.value.trim(),
+                amount: predefinedTypeAmountInput.value ? parseFloat(predefinedTypeAmountInput.value) : 0
+            };
+
+            if (!newPredefined.type || !newPredefined.movement) {
+                alert('Por favor, ingresa el Nombre del Tipo y selecciona el Movimiento.');
+                return;
+            }
+            if (isNaN(newPredefined.amount)) {
+                newPredefined.amount = 0; // Default to 0 if not a number
+            }
+
+            const result = await postData('addPredefined', newPredefined);
+            if (result && result.status === 'success') {
+                alert('Tipo predefinido agregado con éxito!');
+                addPredefinedForm.reset();
+                await loadData(); // Re-fetch all data to refresh lists
+            } else {
+                alert('Error al agregar el tipo predefinido.');
+            }
+        }
+
+        async function deletePredefined(type, movement) {
+            if (!confirm(`¿Estás seguro de que quieres eliminar el tipo predefinido "${type}" de ${movement}?`)) {
+                return;
+            }
+
+            const result = await postData('deletePredefined', { type: type, movement: movement });
+            if (result && result.status === 'success') {
+                alert('Tipo predefinido eliminado con éxito.');
+                await loadData(); // Re-fetch all data to refresh lists
+            } else {
+                alert('Error al eliminar el tipo predefinido.');
+            }
+        }
+
+        function toggleEditPredefined(button, movement) {
+            const listItem = button.closest('li');
+            const itemInfoDiv = listItem.querySelector('.predefined-item-info');
+            const isEditing = listItem.classList.contains('editing');
             
-            // Destruir gráfico existente si existe
-            if (window.lineChart) {
+            if (isEditing) {
+                // Save logic
+                const oldType = listItem.dataset.oldType;
+                const oldMovement = listItem.dataset.oldMovement; // Retrieve original movement
+                const newType = itemInfoDiv.children[0].value.trim();
+                const newDescription = itemInfoDiv.children[1].value.trim();
+                const newAmount = itemInfoDiv.children[2] ? parseFloat(itemInfoDiv.children[2].value) : 0;
+
+                if (!newType) {
+                    alert('El nombre del tipo no puede estar vacío.');
+                    return;
+                }
+                if (isNaN(newAmount)) {
+                    alert('Por favor, ingresa un monto numérico válido.');
+                    return;
+                }
+
+                updatePredefined(
+                    { oldType: oldType, oldMovement: oldMovement },
+                    { newType: newType, newDescription: newDescription, newAmount: newAmount, newMovement: movement }
+                );
+
+                listItem.classList.remove('editing');
+                button.textContent = 'Editar';
+                button.classList.remove('save');
+                button.nextElementSibling.style.display = 'inline-block'; // Show delete button
+            } else {
+                // Edit logic
+                const currentType = itemInfoDiv.children[0].textContent.trim();
+                const currentDescription = itemInfoDiv.children[1].textContent.replace(/[()]/g, '').trim(); // Remove parentheses
+                const currentAmountMatch = itemInfoDiv.textContent.match(/\$([\d.,]+)/);
+                const currentAmount = currentAmountMatch ? parseCurrency(currentAmountMatch[0]) : 0;
+
+
+                listItem.setAttribute('data-old-type', currentType);
+                listItem.setAttribute('data-old-movement', movement); // Store original movement
+
+                itemInfoDiv.innerHTML = `
+                    <input type="text" value="${currentType}" placeholder="Tipo">
+                    <input type="text" value="${currentDescription}" placeholder="Descripción (opcional)">
+                    <input type="number" step="0.01" value="${currentAmount}" placeholder="Monto Sugerido (opcional)">
+                `;
+                listItem.classList.add('editing');
+                button.textContent = 'Guardar';
+                button.classList.add('save');
+                button.nextElementSibling.style.display = 'none'; // Hide delete button
+            }
+        }
+
+        async function updatePredefined(oldData, newData) {
+            const payload = { ...oldData, ...newData }; // Combine old (for identification) and new data
+            const result = await postData('updatePredefined', payload);
+            if (result && result.status === 'success') {
+                alert('Tipo predefinido actualizado con éxito!');
+                await loadData(); // Re-fetch all data to refresh lists
+            } else {
+                alert('Error al actualizar el tipo predefinido.');
+            }
+        }
+
+        // --- Charting ---
+
+        function updateCharts() {
+            // Group transactions by month for line chart
+            const monthlyData = transactions.reduce((acc, t) => {
+                const month = t.date.substring(0, 7); // YYYY-MM
+                if (!acc[month]) {
+                    acc[month] = { income: 0, expense: 0 };
+                }
+                if (t.movement === 'Ingreso') {
+                    acc[month].income += t.amount;
+                } else {
+                    acc[month].expense += t.amount;
+                }
+                return acc;
+            }, {});
+
+            const sortedMonths = Object.keys(monthlyData).sort();
+            const monthlyIncomes = sortedMonths.map(month => monthlyData[month].income);
+            const monthlyExpenses = sortedMonths.map(month => monthlyData[month].expense);
+
+            // Group expenses by type for pie chart
+            const expenseTypes = transactions
+                .filter(t => t.movement === 'Egreso')
+                .reduce((acc, t) => {
+                    acc[t.type] = (acc[t.type] || 0) + t.amount;
+                    return acc;
+                }, {});
+
+            const pieLabels = Object.keys(expenseTypes);
+            const pieData = Object.values(expenseTypes);
+
+            // Line Chart
+            const lineCtx = document.getElementById('lineChart').getContext('2d');
+            if (window.lineChart instanceof Chart) { // Check if it's an instance of Chart
                 window.lineChart.destroy();
             }
-            
-            // Preparar datos por mes
-            const monthlyData = {};
-            transactions.forEach(transaction => {
-                const month = transaction.date.substring(0, 7); // YYYY-MM
-                if (!monthlyData[month]) {
-                    monthlyData[month] = { income: 0, expense: 0 };
-                }
-                if (transaction.movement === 'Ingreso') {
-                    monthlyData[month].income += transaction.amount;
-                } else {
-                    monthlyData[month].expense += transaction.amount;
-                }
-            });
-            
-            const months = Object.keys(monthlyData).sort();
-            const incomeData = months.map(month => monthlyData[month].income);
-            const expenseData = months.map(month => monthlyData[month].expense);
-            
-            window.lineChart = new Chart(ctx, {
+            window.lineChart = new Chart(lineCtx, {
                 type: 'line',
                 data: {
-                    labels: months.map(month => formatMonth(month)),
-                    datasets: [{
-                        label: 'Ingresos',
-                        data: incomeData,
-                        borderColor: '#28a745',
-                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
-                        tension: 0.4
-                    }, {
-                        label: 'Egresos',
-                        data: expenseData,
-                        borderColor: '#dc3545',
-                        backgroundColor: 'rgba(220, 53, 69, 0.1)',
-                        tension: 0.4
-                    }]
+                    labels: sortedMonths,
+                    datasets: [
+                        {
+                            label: 'Ingresos',
+                            data: monthlyIncomes,
+                            borderColor: '#28a745',
+                            backgroundColor: 'rgba(40, 167, 69, 0.2)',
+                            fill: true,
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Egresos',
+                            data: monthlyExpenses,
+                            borderColor: '#dc3545',
+                            backgroundColor: 'rgba(220, 53, 69, 0.2)',
+                            fill: true,
+                            tension: 0.1
+                        }
+                    ]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${formatCurrency(context.parsed.y)}`;
+                                }
+                            }
+                        }
+                    },
                     scales: {
                         y: {
                             beginAtZero: true,
                             ticks: {
                                 callback: function(value) {
-                                    // FIXED: SyntaxError - added empty string for concatenation
-                                    return '' + formatNumber(value); 
-                                }
-                            }
-                        }
-                    },
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    // FIXED: SyntaxError - added empty string for concatenation
-                                    return context.dataset.label + ': ' + formatNumber(context.parsed.y);
+                                    return formatCurrency(value);
                                 }
                             }
                         }
                     }
                 }
             });
-        }
 
-        function updatePieChart() {
-            const ctx = document.getElementById('pieChart').getContext('2d');
-            
-            // Destruir gráfico existente si existe
-            if (window.pieChart) {
+            // Pie Chart
+            const pieCtx = document.getElementById('pieChart').getContext('2d');
+            if (window.pieChart instanceof Chart) { // Check if it's an instance of Chart
                 window.pieChart.destroy();
             }
-            
-            // Preparar datos por tipo
-            const typeData = {};
-            transactions.forEach(transaction => {
-                if (!typeData[transaction.type]) {
-                    typeData[transaction.type] = 0;
-                }
-                typeData[transaction.type] += transaction.amount;
-            });
-            
-            const types = Object.keys(typeData);
-            const amounts = Object.values(typeData);
-            const colors = generateColors(types.length);
-            
-            window.pieChart = new Chart(ctx, {
-                type: 'doughnut',
+            window.pieChart = new Chart(pieCtx, {
+                type: 'pie',
                 data: {
-                    labels: types,
+                    labels: pieLabels,
                     datasets: [{
-                        data: amounts,
-                        backgroundColor: colors,
-                        borderWidth: 2,
-                        borderColor: '#fff'
+                        data: pieData,
+                        backgroundColor: [
+                            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#E7E9ED'
+                        ],
+                        hoverOffset: 4
                     }]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false,
                     plugins: {
+                        legend: {
+                            position: 'right',
+                        },
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    const percentage = ((context.parsed / amounts.reduce((a, b) => a + b, 0)) * 100).toFixed(1);
-                                    // FIXED: SyntaxError - added empty string for concatenation
-                                    return context.label + ': ' + formatNumber(context.parsed) + ' (' + percentage + '%)';
+                                    const label = context.label || '';
+                                    const value = context.raw;
+                                    const total = context.dataset.data.reduce((sum, current) => sum + current, 0);
+                                    const percentage = total > 0 ? ((value / total) * 100).toFixed(2) + '%' : '0%';
+                                    return `${label}: ${formatCurrency(value)} (${percentage})`;
                                 }
                             }
-                        },
-                        legend: {
-                            position: 'bottom'
                         }
                     }
                 }
             });
         }
 
-        // Configuration functions related to sheets config are removed
-        // as the URL is now hardcoded.
-        // The saveConfiguration function is no longer needed.
-        /*
-        function saveConfiguration() {
-            sheetsConfig = document.getElementById('sheetsUrl').value;
-            saveData();
-            showAlert('Configuración guardada exitosamente', 'success');
-        }
-        */
+        // --- Utility Functions ---
 
-        function addPredefinedIncome() {
-            const type = document.getElementById('newIncomeType').value.trim();
-            const description = document.getElementById('newIncomeDescription').value.trim();
-            const amount = parseFloat(document.getElementById('newIncomeAmount').value);
-            
-            if (!type || !description || isNaN(amount)) {
-                showAlert('Por favor completa todos los campos', 'error');
-                return;
-            }
-            
-            // Verificar si ya existe
-            if (predefinedIncomes.some(item => item.type === type)) {
-                showAlert('Este tipo de ingreso ya existe', 'error');
-                return;
-            }
-            
-            predefinedIncomes.push({ type, description, amount });
-            saveData();
-            updatePredefinedSelects();
-            updatePredefinedLists();
-            
-            // Limpiar campos
-            document.getElementById('newIncomeType').value = '';
-            document.getElementById('newIncomeDescription').value = '';
-            document.getElementById('newIncomeAmount').value = '';
-            
-            showAlert('Tipo de ingreso agregado exitosamente', 'success');
+        function formatCurrency(amount) {
+            return `$${amount.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
         }
 
-        function addPredefinedExpense() {
-            const type = document.getElementById('newExpenseType').value.trim();
-            const description = document.getElementById('newExpenseDescription').value.trim();
-            const amount = parseFloat(document.getElementById('newExpenseAmount').value);
-            
-            if (!type || !description || isNaN(amount)) {
-                showAlert('Por favor completa todos los campos', 'error');
-                return;
-            }
-            
-            // Verificar si ya existe
-            if (predefinedExpenses.some(item => item.type === type)) {
-                showAlert('Este tipo de egreso ya existe', 'error');
-                return;
-            }
-            
-            predefinedExpenses.push({ type, description, amount });
-            saveData();
-            updatePredefinedSelects();
-            updatePredefinedLists();
-            
-            // Limpiar campos
-            document.getElementById('newExpenseType').value = '';
-            document.getElementById('newExpenseDescription').value = '';
-            document.getElementById('newExpenseAmount').value = '';
-            
-            showAlert('Tipo de egreso agregado exitosamente', 'success');
+        function parseCurrency(currencyString) {
+            return parseFloat(currencyString.replace('$', '').replace(/\./g, '').replace(',', '.'));
         }
 
-        function updatePredefinedLists() {
-            // Lista de ingresos
-            const incomeList = document.getElementById('incomeList');
-            incomeList.innerHTML = '';
-            predefinedIncomes.forEach((income, index) => {
-                const item = document.createElement('div');
-                item.className = 'predefined-item';
-                item.innerHTML = `
-                    <div class="item-info">
-                        <div class="item-type">${income.type}</div>
-                        <div class="item-description">${income.description}</div>
-                    </div>
-                    <div class="item-amount">${formatNumber(income.amount)}</div>
-                    <button class="delete-btn" onclick="deletePredefinedIncome(${index})">Eliminar</button>
-                `;
-                incomeList.appendChild(item);
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
             });
-            
-            // Lista de egresos
-            const expenseList = document.getElementById('expenseList');
-            expenseList.innerHTML = '';
-            predefinedExpenses.forEach((expense, index) => {
-                const item = document.createElement('div');
-                item.className = 'predefined-item';
-                item.innerHTML = `
-                    <div class="item-info">
-                        <div class="item-type">${expense.type}</div>
-                        <div class="item-description">${expense.description}</div>
-                    </div>
-                    <div class="item-amount">${formatNumber(expense.amount)}</div>
-                    <button class="delete-btn" onclick="deletePredefinedExpense(${index})">Eliminar</button>
-                `;
-                expenseList.appendChild(item);
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
             });
-        }
 
-        function deletePredefinedIncome(index) {
-            if (confirm('¿Estás seguro de eliminar este tipo de ingreso?')) {
-                predefinedIncomes.splice(index, 1);
-                saveData();
-                updatePredefinedSelects();
-                updatePredefinedLists();
-                showAlert('Tipo de ingreso eliminado exitosamente', 'success');
+            document.getElementById(tabId).classList.add('active');
+            document.querySelector(`.tab-button[onclick="showTab('${tabId}')"]`).classList.add('active');
+
+            // Re-render charts if going to dashboard to ensure they are correct
+            if (tabId === 'dashboard') {
+                updateCharts();
+            }
+            if (tabId === 'predefinedTypesSection') {
+                renderPredefinedTypes();
+            }
+            if (tabId === 'addTransaction') {
+                filterTransactionTypes();
             }
         }
 
-        function deletePredefinedExpense(index) {
-            if (confirm('¿Estás seguro de eliminar este tipo de egreso?')) {
-                predefinedExpenses.splice(index, 1);
-                saveData();
-                updatePredefinedSelects();
-                updatePredefinedLists();
-                showAlert('Tipo de egreso eliminado exitosamente', 'success');
-            }
-        }
+        // --- Event Listeners ---
+        document.addEventListener('DOMContentLoaded', () => {
+            loginForm.addEventListener('submit', handleLogin);
+            logoutButton.addEventListener('click', handleLogout);
+            transactionForm.addEventListener('submit', handleTransactionSubmit);
+            addPredefinedForm.addEventListener('submit', handleAddPredefinedType);
 
-        // Sincronización con Google Sheets
-        async function syncWithGoogleSheets(transaction) {
-            if (!sheetsConfig) {
-                showAlert('No se ha configurado la URL de Google Apps Script para sincronización.', 'error');
-                return;
-            }
-            
-            try {
-                const response = await fetch(sheetsConfig, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(transaction)
-                });
-
-                if (response.ok) {
-                    const result = await response.text(); // Assuming script returns plain text success/error
-                    console.log('Sincronización con Google Sheets exitosa:', result);
-                    showAlert('Sincronización con Google Sheets completada', 'success');
-                } else {
-                    const errorText = await response.text();
-                    console.error('Error al sincronizar con Google Sheets:', response.status, errorText);
-                    showAlert(`Error al sincronizar con Google Sheets: ${response.status} - ${errorText}`, 'error');
-                }
-            } catch (error) {
-                console.error('Error de red al sincronizar con Google Sheets:', error);
-                showAlert('Error de red al sincronizar con Google Sheets.', 'error');
-            }
-        }
-
-        // Utilidades
-        function formatNumber(number) {
-            return new Intl.NumberFormat('es-CO').format(number);
-        }
-
-        function formatDate(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('es-CO');
-        }
-
-        function formatMonth(monthString) {
-            const [year, month] = monthString.split('-');
-            const monthNames = [
-                'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
-                'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'
-            ];
-            return `${monthNames[parseInt(month) - 1]} ${year}`;
-        }
-
-        function generateColors(count) {
-            const colors = [
-                '#667eea', '#764ba2', '#f093fb', '#f5576c',
-                '#4facfe', '#00f2fe', '#43e97b', '#38f9d7',
-                '#ffecd2', '#fcb69f', '#a8edea', '#fed6e3',
-                '#ff9a9e', '#fecfef', '#ffecd2', '#fcb69f'
-            ];
-            
-            const result = [];
-            for (let i = 0; i < count; i++) {
-                result.push(colors[i % colors.length]);
-            }
-            return result;
-        }
-
-        function showAlert(message, type) {
-            // Crear elemento de alerta
-            const alert = document.createElement('div');
-            alert.className = `alert alert-${type}`;
-            alert.textContent = message;
-            
-            // Insertar al inicio del contenido
-            const content = document.querySelector('.content');
-            content.insertBefore(alert, content.firstChild);
-            
-            // Remover después de 3 segundos
-            setTimeout(() => {
-                alert.remove();
-            }, 3000);
-        }
-
-        // Datos de ejemplo para demostración
-        function loadSampleData() {
-            if (transactions.length === 0) {
-                // Agregar algunos tipos predefinidos de ejemplo
-                predefinedIncomes = [
-                    { type: 'Salario', description: 'Pago de Salario Mensual', amount: 1500000 },
-                    { type: 'Freelance', description: 'Trabajo Independiente', amount: 500000 },
-                    { type: 'Inversiones', description: 'Rendimientos de Inversión', amount: 200000 }
-                ];
-                
-                predefinedExpenses = [
-                    { type: 'Arriendo', description: 'Pago Arriendo Mensual', amount: 500000 },
-                    { type: 'Alimentación', description: 'Gastos de Alimentación', amount: 300000 },
-                    { type: 'Transporte', description: 'Gastos de Transporte', amount: 150000 },
-                    { type: 'Servicios', description: 'Servicios Públicos', amount: 200000 }
-                ];
-                
-                // Agregar algunas transacciones de ejemplo
-                const today = new Date();
-                const currentMonth = today.toISOString().split('T')[0].substring(0, 7);
-                
-                transactions = [
-                    {
-                        id: 1,
-                        date: `${currentMonth}-01`,
-                        type: 'Salario',
-                        description: 'Pago de Salario Mensual',
-                        amount: 1500000,
-                        movement: 'Ingreso'
-                    },
-                    { 
-                        id: 2,
-                        date: `${currentMonth}-05`,
-                        type: 'Arriendo',
-                        description: 'Pago Arriendo Mensual',
-                        amount: 500000,
-                        movement: 'Egreso'
-                    },
-                    {
-                        id: 3,
-                        date: `${currentMonth}-10`,
-                        type: 'Alimentación',
-                        description: 'Mercado Mensual',
-                        amount: 300000,
-                        movement: 'Egreso'
-                    }
-                ];
-                
-                saveData();
-            }
-        }
-
-        // Cargar datos de ejemplo al inicializar
-        setTimeout(loadSampleData, 1000);
+            // Set today's date as default for transaction date input
+            transactionDateInput.value = new Date().toISOString().split('T')[0];
+        });
     </script>
 </body>
 </html>
