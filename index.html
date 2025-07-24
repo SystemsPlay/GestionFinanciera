@@ -752,19 +752,6 @@
 
             <div id="config" class="tab-content">
                 <div class="config-section">
-                    <h3>Configuración de Google Sheets</h3>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>URL de Google Apps Script (Sincronización)</label>
-                            <input type="url" id="sheetsUrl" placeholder="https://script.google.com/macros/s/.../exec">
-                        </div>
-                        <div class="form-group">
-                            <button class="btn btn-primary" onclick="saveConfiguration()">Guardar Configuración</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="config-section">
                     <h3>Tipos de Ingresos Predefinidos</h3>
                     <div class="form-row">
                         <div class="form-group">
@@ -819,9 +806,10 @@
         let transactions = [];
         let predefinedIncomes = [];
         let predefinedExpenses = [];
-        let sheetsConfig = '';
+        // Apps Script URL hardcoded as per user request
+        let sheetsConfig = 'https://script.google.com/macros/s/AKfycbymBcf4ut-aL3DJshdpiO5t3UEEJiIT8PmWVPYqSIl_-nW8PST_BoZVmHVV2vlZsBM36w/exec';
         
-        // Configuración de usuario por defecto (en un entorno real, esto estaría en un servidor)
+        // Configuración de usuario por defecto (en un entorno real, esto estaría en un servidor o se integraría con Google Sheets)
         const users = {
             'admin': 'admin123',
             'usuario': 'password'
@@ -906,23 +894,20 @@
             const storedTransactions = JSON.parse(localStorage.getItem('transactions') || '[]');
             const storedPredefinedIncomes = JSON.parse(localStorage.getItem('predefinedIncomes') || '[]');
             const storedPredefinedExpenses = JSON.parse(localStorage.getItem('predefinedExpenses') || '[]');
-            const storedSheetsConfig = localStorage.getItem('sheetsConfig') || '';
+            // sheetsConfig is now hardcoded, no longer loaded from localStorage
             
             transactions = storedTransactions;
             predefinedIncomes = storedPredefinedIncomes;
             predefinedExpenses = storedPredefinedExpenses;
-            sheetsConfig = storedSheetsConfig;
             
-            if (sheetsConfig) {
-                document.getElementById('sheetsUrl').value = sheetsConfig;
-            }
+            // No need to set value to sheetsUrl input as it's removed
         }
 
         function saveData() {
             localStorage.setItem('transactions', JSON.stringify(transactions));
             localStorage.setItem('predefinedIncomes', JSON.stringify(predefinedIncomes));
             localStorage.setItem('predefinedExpenses', JSON.stringify(predefinedExpenses));
-            localStorage.setItem('sheetsConfig', sheetsConfig);
+            // sheetsConfig is now hardcoded, no longer saved to localStorage
         }
 
         function loadData() {
@@ -1225,7 +1210,8 @@
                             beginAtZero: true,
                             ticks: {
                                 callback: function(value) {
-                                    return ' + formatNumber(value);
+                                    // FIXED: SyntaxError - added empty string for concatenation
+                                    return '' + formatNumber(value); 
                                 }
                             }
                         }
@@ -1234,7 +1220,8 @@
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    return context.dataset.label + ':  + formatNumber(context.parsed.y);
+                                    // FIXED: SyntaxError - added empty string for concatenation
+                                    return context.dataset.label + ': ' + formatNumber(context.parsed.y);
                                 }
                             }
                         }
@@ -1283,7 +1270,8 @@
                             callbacks: {
                                 label: function(context) {
                                     const percentage = ((context.parsed / amounts.reduce((a, b) => a + b, 0)) * 100).toFixed(1);
-                                    return context.label + ':  + formatNumber(context.parsed) + ' (' + percentage + '%)';
+                                    // FIXED: SyntaxError - added empty string for concatenation
+                                    return context.label + ': ' + formatNumber(context.parsed) + ' (' + percentage + '%)';
                                 }
                             }
                         },
@@ -1295,12 +1283,16 @@
             });
         }
 
-        // Configuración
+        // Configuration functions related to sheets config are removed
+        // as the URL is now hardcoded.
+        // The saveConfiguration function is no longer needed.
+        /*
         function saveConfiguration() {
             sheetsConfig = document.getElementById('sheetsUrl').value;
             saveData();
             showAlert('Configuración guardada exitosamente', 'success');
         }
+        */
 
         function addPredefinedIncome() {
             const type = document.getElementById('newIncomeType').value.trim();
