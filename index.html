@@ -714,36 +714,51 @@
 
         // --- Core Functions for Google Apps Script Interaction ---
 
-        async function fetchData(action, params = {}) {
-            const url = new URL(SCRIPT_URL);
-            url.searchParams.append('action', action);
-            for (const key in params) {
-                url.searchParams.append(key, params[key]);
-            }
-            try {
-                const response = await fetch(url.toString(), {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    // credentials: 'omit' // Opcional, dependiendo de la configuración CORS de tu Apps Script
-                });
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error(`HTTP error! status: ${response.status}, text: ${errorText}`);
-                    // Devuelve un objeto de error para que el llamador pueda manejarlo.
-                    return { status: 'error', message: `Error HTTP ${response.status}: ${errorText || response.statusText}` };
-                }
-                const data = await response.json();
-                console.log(`Fetched ${action} data:`, data); // Debugging
-                return data;
-            } catch (error) {
-                console.error(`Error fetching ${action} data:`, error);
-                alert(`Error al cargar datos desde Google Sheets para ${action}. Revisa la consola para más detalles y asegúrate de que tu Apps Script esté desplegado correctamente con acceso 'Cualquier usuario'.`);
-                // Asegura que siempre se devuelve un objeto con 'status' para evitar TypeError
-                return { status: 'error', message: 'Error de red o el Apps Script no es accesible.', details: error.toString() };
-            }
+async function fetchData(action, params = {}, method = 'GET') { // Añadido 'method' como parámetro
+    const url = new URL(SCRIPT_URL);
+    url.searchParams.append('action', action);
+
+    let requestBody = null;
+    let requestHeaders = {};
+
+    if (method === 'GET' || method === 'DELETE') { // GET y DELETE envían parámetros en la URL
+        for (const key in params) {
+            url.searchParams.append(key, params[key]);
         }
+        // Para GET y DELETE, NO se envía Content-Type: application/json
+    } else if (method === 'POST' || method === 'PUT') { // POST y PUT envían body JSON
+        requestHeaders['Content-Type'] = 'application/json';
+        requestBody = JSON.stringify(params); // params se convierte en el body para POST/PUT
+    }
+
+    try {
+        const fetchOptions = {
+            method: method,
+            headers: requestHeaders,
+            // credentials: 'omit' // Esto es opcional y depende de tu configuración, déjalo si lo necesitas
+        };
+
+        if (requestBody) {
+            fetchOptions.body = requestBody;
+        }
+
+        const response = await fetch(url.toString(), fetchOptions);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`HTTP error! status: ${response.status}, text: ${errorText}`);
+            return { status: 'error', message: `Error HTTP ${response.status}: ${errorText || response.statusText}` };
+        }
+
+        const data = await response.json();
+        console.log(`Fetched ${action} data:`, data); // Debugging
+        return data;
+    } catch (error) {
+        console.error(`Error fetching ${action} data:`, error);
+        alert(`Error al cargar datos desde Google Apps Script para ${action}. Revisa la consola para más detalles y asegúrate de que tu Apps Script esté desplegado correctamente con acceso 'Cualquier usuario'.`);
+        return { status: 'error', message: 'Error de red o el Apps Script no es accesible.', details: error.toString() };
+    }
+}
 
         async function postData(action, payload) {
             const url = new URL(SCRIPT_URL);
