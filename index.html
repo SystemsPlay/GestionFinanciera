@@ -566,6 +566,19 @@
                     <canvas id="pieChart"></canvas>
                 </div>
             </div>
+
+            <div class="dashboard-summary">
+                <h2>Resumen Mensual</h2>
+                <div class="month-year-filter">
+                    <label for="monthSelect">Mes:</label>
+                    <select id="monthSelect" class="form-select"></select>
+                    <label for="yearSelect">Año:</label>
+                    <select id="yearSelect" class="form-select"></select>
+                </div>
+                <p>Ingresos Totales: <span id="totalIncome">$0.00</span></p>
+                <p>Egresos Totales: <span id="totalExpense">$0.00</span></p>
+                <p>Balance Actual: <span id="currentBalance">$0.00</span></p>
+            </div>
         </div>
 
         <div id="transactions" class="tab-content">
@@ -684,7 +697,11 @@
         window.lineChart = null;
         window.pieChart = null;
     
-        // DOM Elements
+        // Filters for dashboard/charts
+        let currentMonthFilter = new Date().getMonth() + 1; // 1-12
+        let currentYearFilter = new Date().getFullYear();
+    
+        // DOM Elements (adding new ones for month/year filter)
         const loginContainer = document.getElementById('loginContainer');
         const dashboardContainer = document.getElementById('dashboardContainer');
         const loginForm = document.getElementById('loginForm');
@@ -708,6 +725,10 @@
         const predefinedTypeAmountInput = document.getElementById('predefinedTypeAmount');
         const predefinedIncomesList = document.getElementById('predefinedIncomesList');
         const predefinedExpensesList = document.getElementById('predefinedExpensesList');
+        // New: Month/Year filter elements
+        const monthSelect = document.getElementById('monthSelect');
+        const yearSelect = document.getElementById('yearSelect');
+    
     
         // --- Core Functions for Google Apps Script Interaction ---
     
@@ -812,7 +833,7 @@
                 const transactionsResult = await fetchData('getAllTransactions', {}, 'GET'); // Use fetchData for GET
                 if (transactionsResult && transactionsResult.status !== 'error') {
                     transactions = transactionsResult;
-                    renderTransactions();
+                    renderTransactions(); // This will render all, filtering will happen in dashboard/charts
                 } else {
                     transactions = []; // Ensure it's an empty array on error
                     console.error('Error fetching transactions:', transactionsResult.message);
@@ -829,6 +850,7 @@
                     console.error('Error fetching predefined types:', predefinedResult.message);
                 }
     
+                initializeMonthYearSelector(); // Initialize selector after data loaded
                 updateDashboard(); // Update dashboard after loading all data
             } catch (error) {
                 console.error('Error loading initial data:', error);
@@ -841,6 +863,8 @@
                 transactionsTableBody.innerHTML = '<tr><td colspan="6">No hay transacciones registradas.</td></tr>';
                 return;
             }
+            // This renderTransactions function will still render ALL transactions.
+            // Filtering for display in the table will be added in a later step.
             transactions.forEach(trans => {
                 const row = transactionsTableBody.insertRow();
                 row.insertCell().textContent = trans.fecha;
@@ -861,12 +885,65 @@
         }
     
         // --- Dashboard & Chart Updates ---
+        function initializeMonthYearSelector() {
+            monthSelect.innerHTML = '';
+            yearSelect.innerHTML = '';
+    
+            const months = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+            months.forEach((month, index) => {
+                const option = document.createElement('option');
+                option.value = index + 1; // 1-indexed month
+                option.textContent = month;
+                if (option.value == currentMonthFilter) {
+                    option.selected = true;
+                }
+                monthSelect.appendChild(option);
+            });
+    
+            const currentYear = new Date().getFullYear();
+            // Populate years from current year down to 5 years ago, or as relevant from data
+            const earliestYear = transactions.reduce((minYear, trans) => {
+                if (trans.fecha) {
+                    const year = new Date(trans.fecha).getFullYear();
+                    return isNaN(year) ? minYear : Math.min(minYear, year);
+                }
+                return minYear;
+            }, currentYear); // Start with current year as min if no transactions
+    
+            for (let year = currentYear; year >= earliestYear - 5 && year >= 2000; year--) { // Go back at least 5 years or until 2000
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                if (option.value == currentYearFilter) {
+                    option.selected = true;
+                }
+                yearSelect.appendChild(option);
+            }
+    
+            monthSelect.onchange = (event) => {
+                currentMonthFilter = parseInt(event.target.value);
+                updateDashboard();
+            };
+            yearSelect.onchange = (event) => {
+                currentYearFilter = parseInt(event.target.value);
+                updateDashboard();
+            };
+        }
+    
         function updateDashboard() {
-            const totalIncome = transactions
+            // Filter transactions for the selected month and year
+            const filteredTransactions = transactions.filter(t => {
+                if (!t.fecha || typeof t.fecha !== 'string') return false;
+                const date = new Date(t.fecha);
+                if (isNaN(date.getTime())) return false;
+                return date.getMonth() + 1 === currentMonthFilter && date.getFullYear() === currentYearFilter;
+            });
+    
+            const totalIncome = filteredTransactions
                 .filter(t => t.movimiento === 'Ingreso')
                 .reduce((sum, t) => sum + parseFloat(t.monto), 0);
     
-            const totalExpense = transactions
+            const totalExpense = filteredTransactions
                 .filter(t => t.movimiento === 'Egreso')
                 .reduce((sum, t) => sum + parseFloat(t.monto), 0);
     
@@ -876,13 +953,18 @@
             totalExpenseElem.textContent = `$${totalExpense.toFixed(2)}`;
             currentBalanceElem.textContent = `$${currentBalance.toFixed(2)}`;
     
-            updateCharts();
+            // Pass filtered transactions to updateCharts for current month's view
+            updateCharts(filteredTransactions);
         }
     
         // --- Chart Functions ---
-        function updateCharts() {
+        // updateCharts now accepts a subset of transactions to render for
+        function updateCharts(transactionsToChart = transactions) {
             // Ingresos vs Egresos por Mes (Line Chart)
-            const monthlyData = transactions.reduce((acc, transaction) => {
+            // This will now chart monthly data for the *selected year*, if a range is implied
+            // Or if only current month is needed, then this chart needs rethinking for a single month.
+            // For the user's request, the line chart should show monthly data *within the selected year*.
+            const monthlyData = transactionsToChart.reduce((acc, transaction) => {
                 // **CORRECCIÓN PARA EL ERROR TypeError: Cannot read properties of undefined (reading 'substring')**
                 if (!transaction.fecha || typeof transaction.fecha !== 'string') {
                     console.warn('Saltando transacción debido a fecha faltante o inválida:', transaction);
@@ -895,6 +977,7 @@
                     return acc; // Ignorar esta transacción si la fecha no es válida
                 }
     
+                // Group by month-year for charting trends
                 const monthYear = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
                 if (!acc[monthYear]) {
                     acc[monthYear] = { income: 0, expense: 0 };
@@ -907,9 +990,19 @@
                 return acc;
             }, {});
     
-            const sortedMonths = Object.keys(monthlyData).sort();
-            const monthlyIncomes = sortedMonths.map(month => monthlyData[month].income);
-            const monthlyExpenses = sortedMonths.map(month => monthlyData[month].expense);
+            // Filter the monthlyData to only include entries for the currentYearFilter
+            const filteredMonthlyData = Object.keys(monthlyData).filter(key => {
+                const [year, month] = key.split('-').map(Number);
+                return year === currentYearFilter;
+            }).reduce((acc, key) => {
+                acc[key] = monthlyData[key];
+                return acc;
+            }, {});
+    
+    
+            const sortedMonths = Object.keys(filteredMonthlyData).sort();
+            const monthlyIncomes = sortedMonths.map(month => filteredMonthlyData[month].income);
+            const monthlyExpenses = sortedMonths.map(month => filteredMonthlyData[month].expense);
     
             if (window.lineChart instanceof Chart) {
                 window.lineChart.destroy();
@@ -934,17 +1027,27 @@
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false,
+                    maintainAspectRatio: false, // Maintain this for flexibility
                     scales: {
                         y: {
                             beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        // Added to make charts "not stretch infinitely downwards"
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: `Ingresos vs Egresos por Mes (${currentYearFilter})`
                         }
                     }
                 }
             });
     
-            // Distribución de Egresos (Pie Chart)
-            const expenseDistribution = transactions
+            // Distribución de Egresos (Pie Chart) - should also respect the filtered transactions
+            const expenseDistribution = transactionsToChart
                 .filter(t => t.movimiento === 'Egreso')
                 .reduce((acc, t) => {
                     acc[t.tipo] = (acc[t.tipo] || 0) + parseFloat(t.monto);
@@ -977,14 +1080,14 @@
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false,
+                    maintainAspectRatio: false, // Maintain this for flexibility
                     plugins: {
                         legend: {
                             position: 'top',
                         },
                         title: {
                             display: true,
-                            text: 'Distribución de Egresos por Tipo'
+                            text: `Distribución de Egresos por Tipo (${months[currentMonthFilter - 1]} ${currentYearFilter})`
                         }
                     }
                 }
@@ -1199,10 +1302,10 @@
         }
     
     
-        // --- Dropdown Filtering ---
+        // --- Dropdown Filtering (Predefined Types for Add Transaction) ---
         function filterTransactionTypes() {
             const selectedMovement = transactionMovementSelect.value;
-            transactionTypeSelect.innerHTML = '<option value="">Seleccione</option>';
+            transactionTypeSelect.innerHTML = '<option value="">Seleccione</option>'; // Reset dropdown
     
             let typesToFilter = [];
             if (selectedMovement === 'Ingreso') {
@@ -1217,6 +1320,31 @@
                 option.textContent = type.tipo;
                 transactionTypeSelect.appendChild(option);
             });
+            // Clear description and amount when movement changes
+            transactionDescriptionInput.value = '';
+            transactionAmountInput.value = '';
+        }
+    
+        // New function to auto-fill description and amount based on selected predefined type
+        function autoFillTransactionDetails() {
+            const selectedType = transactionTypeSelect.value;
+            const selectedMovement = transactionMovementSelect.value;
+    
+            let predefinedItem = null;
+            if (selectedMovement === 'Ingreso') {
+                predefinedItem = predefinedIncomes.find(item => item.tipo === selectedType);
+            } else if (selectedMovement === 'Egreso') {
+                predefinedItem = predefinedExpenses.find(item => item.tipo === selectedType);
+            }
+    
+            if (predefinedItem) {
+                transactionDescriptionInput.value = predefinedItem.descripcion || '';
+                transactionAmountInput.value = parseFloat(predefinedItem.montoSugerido || 0).toFixed(2);
+            } else {
+                // Clear if no matching predefined type is found or "Seleccione" is chosen
+                transactionDescriptionInput.value = '';
+                transactionAmountInput.value = '';
+            }
         }
     
         // --- Tab Switching ---
@@ -1233,7 +1361,8 @@
     
             // Re-render charts if going to dashboard to ensure they are correct
             if (tabId === 'dashboard') {
-                updateCharts();
+                // Ensure month/year filter is applied when dashboard is shown
+                updateDashboard();
             }
             if (tabId === 'predefinedTypesSection') {
                 renderPredefinedTypes();
@@ -1249,6 +1378,12 @@
             logoutButton.addEventListener('click', handleLogout);
             transactionForm.addEventListener('submit', handleTransactionSubmit);
             addPredefinedForm.addEventListener('submit', handleAddPredefinedType);
+    
+            // Event listener for movement select to filter types
+            transactionMovementSelect.addEventListener('change', filterTransactionTypes);
+            // Event listener for type select to auto-fill description/amount
+            transactionTypeSelect.addEventListener('change', autoFillTransactionDetails);
+    
     
             // Set today's date as default for transaction date input
             transactionDateInput.value = new Date().toISOString().split('T')[0];
