@@ -705,32 +705,29 @@
 
         // --- Funciones de Utilidad ---
         async function fetchData(action, method = 'GET', body = null) {
-            let url = `${WEB_APP_URL}?action=${action}`;
-            const options = { method: method };
+    const url = `${WEB_APP_URL}?action=${action}`;
+    const options = { method };
 
-            if (method !== 'GET' && body) {
-                options.headers = { 'Content-Type': 'application/json' };
-                options.body = JSON.stringify(body);
-            }
+    if (method !== 'GET' && body) {
+        options.headers = { 'Content-Type': 'application/json' };
+        options.body = JSON.stringify(body);
+    }
 
-            try {
-                const response = await fetch(url, options);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-                if (data.status === 'error') {
-                    console.error(`Error de la API en acción ${action}:`, data.message);
-                    alert(`Error en la operación: ${data.message}`);
-                    return null;
-                }
-                return data;
-            } catch (error) {
-                console.error(`Error en fetchData para acción ${action}:`, error);
-                alert(`Error al conectar con el servidor: ${error.message}. Asegúrate de que el Apps Script esté desplegado y la URL sea correcta.`);
-                return null;
-            }
+    try {
+        const response = await fetch(url, options);
+        const data = await response.json();
+        if (data.status === 'error') {
+            alert(data.message);
+            return null;
         }
+        return data;
+    } catch (error) {
+        console.error(`Error en fetchData para acción ${action}:`, error);
+        alert('❌ Error de conexión con el servidor.');
+        return null;
+    }
+}
+
 
         function formatCurrency(amount) {
             return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(amount);
