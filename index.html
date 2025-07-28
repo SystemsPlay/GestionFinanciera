@@ -655,8 +655,7 @@
     </div>
 
     <script>
-        // ¡IMPORTANTE! Reemplaza con la URL de tu Google Apps Script desplegado como aplicación web.
-        // Asegúrate de que tenga acceso "Cualquier usuario".
+        // ¡IMPORTANTE! Reemplaza con la URL de tu Google Apps Script desplegado como aplicación web
         const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbymBcf4ut-aL3DJshdpiO5t3UEEJiIT8PmWVPYqSIl_-nW8PST_BoZVmHVV2vlZsBM36w/exec'; // <--- ¡ACTUALIZA ESTA URL!
 
         // Elementos del DOM
@@ -705,28 +704,39 @@
 
         // --- Funciones de Utilidad ---
         async function fetchData(action, method = 'GET', body = null) {
-    const url = `${WEB_APP_URL}?action=${action}`;
-    const options = { method };
+            let url = `${WEB_APP_URL}?action=${action}`;
+            const options = { method };
 
-    if (method !== 'GET' && body) {
-        options.headers = { 'Content-Type': 'application/json' };
-        options.body = JSON.stringify(body);
-    }
+            if (method === 'GET' && body) {
+                // For GET requests, append parameters to the URL
+                const params = new URLSearchParams(body).toString();
+                url = `${url}&${params}`;
+            } else if (method !== 'GET' && body) {
+                options.headers = { 'Content-Type': 'application/json' };
+                options.body = JSON.stringify(body);
+            }
 
-    try {
-        const response = await fetch(url, options);
-        const data = await response.json();
-        if (data.status === 'error') {
-            alert(data.message);
-            return null;
+            try {
+                const response = await fetch(url, options);
+                // Check for non-200 responses specifically
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                    alert(`❌ Error del servidor: ${response.status} - ${errorText.substring(0, 100)}...`);
+                    return null;
+                }
+                const data = await response.json();
+                if (data.status === 'error') {
+                    alert(data.message);
+                    return null;
+                }
+                return data;
+            } catch (error) {
+                console.error(`Error en fetchData para acción ${action}:`, error);
+                alert('❌ Error de conexión con el servidor. Revisa la consola para más detalles.');
+                return null;
+            }
         }
-        return data;
-    } catch (error) {
-        console.error(`Error en fetchData para acción ${action}:`, error);
-        alert('❌ Error de conexión con el servidor.');
-        return null;
-    }
-}
 
 
         function formatCurrency(amount) {
@@ -740,25 +750,17 @@
             const password = passwordInput.value;
 
             loginMessage.textContent = 'Iniciando sesión...';
-            const data = await fetchData('authenticateUser', 'GET', null, { username, password }); // Pasar parámetros por GET para autenticación
-            // Reajustamos fetchData para que soporte parámetros de GET directamente en la URL
-            const authUrl = `${WEB_APP_URL}?action=authenticateUser&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
-            try {
-                const response = await fetch(authUrl);
-                const data = await response.json();
+            // Now fetchData handles GET parameters correctly
+            const data = await fetchData('authenticateUser', 'GET', { username, password });
 
-                if (data.status === 'success') {
-                    localStorage.setItem('loggedIn', 'true');
-                    loginSection.style.display = 'none';
-                    appSection.style.display = 'flex';
-                    loginMessage.textContent = '';
-                    loadAppData(); // Cargar datos de la app
-                } else {
-                    loginMessage.textContent = data.message || 'Error de autenticación.';
-                }
-            } catch (error) {
-                console.error('Error durante el login:', error);
-                loginMessage.textContent = 'Error de conexión. Intenta de nuevo.';
+            if (data && data.status === 'success') {
+                localStorage.setItem('loggedIn', 'true');
+                loginSection.style.display = 'none';
+                appSection.style.display = 'flex';
+                loginMessage.textContent = '';
+                loadAppData(); // Cargar datos de la app
+            } else {
+                loginMessage.textContent = (data && data.message) ? data.message : 'Error de autenticación.';
             }
         }
 
@@ -810,8 +812,10 @@
 
             transactionsToDisplay.forEach(transaction => {
                 const row = transactionsTableBody.insertRow();
+                // Ensure date format for display is consistent, e.g., YYYY-MM-DD
+                const displayDate = transaction.Fecha ? new Date(transaction.Fecha).toISOString().split('T')[0] : '';
                 row.innerHTML = `
-                    <td>${transaction.Fecha || ''}</td>
+                    <td>${displayDate}</td>
                     <td style="color: ${transaction.Movimiento === 'Ingreso' ? '#2ecc71' : '#e74c3c'}; font-weight: bold;">${transaction.Movimiento || ''}</td>
                     <td>${transaction.Tipo || ''}</td>
                     <td>${transaction.Descripcion || ''}</td>
@@ -967,12 +971,14 @@
             const keywords = filterKeywordsInput.value.toLowerCase().trim();
 
             let filteredTransactions = allTransactions.filter(transaction => {
-                const transactionDate = new Date(transaction.Fecha);
-                const transactionMonth = (transactionDate.getMonth() + 1).toString().padStart(2, '0');
+                // Ensure transaction.Fecha is treated as a date string for consistency
+                const transactionDateStr = transaction.Fecha; // Assuming it's already 'YYYY-MM-DD' from Apps Script
+                const transactionMonth = transactionDateStr ? transactionDateStr.substring(5, 7) : ''; // Extract MM from YYYY-MM-DD
+
                 const transactionType = transaction.Tipo ? transaction.Tipo.toLowerCase() : '';
                 const transactionMovement = transaction.Movimiento ? transaction.Movimiento.toLowerCase() : '';
                 const transactionDescription = transaction.Descripcion ? transaction.Descripcion.toLowerCase() : '';
-                const transactionAmount = (transaction.Monto || 0).toString(); // Convertir a string para buscar en monto
+                const transactionAmount = (transaction.Monto || 0).toString(); // Convert to string for searching in amount
 
                 const monthMatch = month === 'all' || transactionMonth === month;
                 const typeMatch = type === 'all' || transactionType === type.toLowerCase();
@@ -1012,7 +1018,6 @@
                 transactionMessage.style.color = 'green';
                 transactionForm.reset(); // Limpia el formulario
                 transactionDateInput.value = new Date().toISOString().split('T')[0]; // Resetear fecha
-
                 await fetchDataAndRender(); // Recargar y renderizar todo
             } else {
                 transactionMessage.textContent = result ? result.message : 'Error al guardar la transacción.';
@@ -1054,15 +1059,15 @@
             }
 
             editTransactionIdInput.value = transactionToEdit.ID;
-            editDateInput.value = transactionToEdit.Fecha;
+            editDateInput.value = transactionToEdit.Fecha; // Assuming 'YYYY-MM-DD' format
             editMovementSelect.value = transactionToEdit.Movimiento;
+
+            // Populate and then select the type
+            populateTransactionTypeDropdowns();
             editTypeSelect.value = transactionToEdit.Tipo;
+
             editDescriptionInput.value = transactionToEdit.Descripcion;
             editAmountInput.value = transactionToEdit.Monto;
-
-            // Asegurar que el dropdown de tipo se actualice con la opción correcta
-            populateTransactionTypeDropdowns(); // Llenar con todos los tipos
-            editTypeSelect.value = transactionToEdit.Tipo; // Seleccionar el tipo de la transacción
 
             editTransactionModal.style.display = 'flex'; // Mostrar el modal
         }
@@ -1222,8 +1227,9 @@
                 applyFilters();
             } else if (tabId === 'predefinedTypesSection') {
                 renderPredefinedTypes();
-            } else if (tabId === 'addTransaction') {
-                populateTransactionTypeDropdowns(); // Asegura que los tipos estén actualizados
+            } else if (tabId === 'addTransaction' || tabId === 'transactionsSection') {
+                // Ensure transaction types are updated whenever you interact with forms or filters
+                populateTransactionTypeDropdowns();
             }
         }
 
