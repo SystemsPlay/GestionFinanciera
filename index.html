@@ -771,6 +771,30 @@
         <main>
             <section id="dashboard" class="tab-content active">
                 <h2>Resumen Financiero</h2>
+                <div class="filters" style="margin-bottom: 25px;">
+                    <div>
+                        <label for="dashboardFilterYear">Año:</label>
+                        <select id="dashboardFilterYear"></select>
+                    </div>
+                    <div>
+                        <label for="dashboardFilterMonth">Mes:</label>
+                        <select id="dashboardFilterMonth">
+                            <option value="all">Todos</option>
+                            <option value="01">Enero</option>
+                            <option value="02">Febrero</option>
+                            <option value="03">Marzo</option>
+                            <option value="04">Abril</option>
+                            <option value="05">Mayo</option>
+                            <option value="06">Junio</option>
+                            <option value="07">Julio</option>
+                            <option value="08">Agosto</option>
+                            <option value="09">Septiembre</option>
+                            <option value="10">Octubre</option>
+                            <option value="11">Noviembre</option>
+                            <option value="12">Diciembre</option>
+                        </select>
+                    </div>
+                </div>
                 <div class="dashboard-grid">
                     <div class="dashboard-card">
                         <h3>Saldo Actual</h3>
@@ -1039,6 +1063,10 @@
         const filterKeywordsInput = document.getElementById('filterKeywords');
         const applyFiltersButton = document.getElementById('applyFiltersButton');
 
+        // Elementos para filtros del dashboard
+        const dashboardFilterYearSelect = document.getElementById('dashboardFilterYear');
+        const dashboardFilterMonthSelect = document.getElementById('dashboardFilterMonth');
+
         // Elementos para el Toast
         const toast = document.createElement('div');
         toast.id = 'toast';
@@ -1177,8 +1205,9 @@
             try {
                 await fetchDataAndRender();
                 populateFilterYears();
+                populateDashboardFilterYears(); // Llama a la nueva función
                 applyFilters();
-                updateCharts();
+                filterDashboardTransactions(); // Llama a la nueva función
             } catch (error) {
                 console.error('Error al cargar datos de la aplicación:', error);
                 showToast('Error al cargar datos de la aplicación.', 'error');
@@ -1322,12 +1351,82 @@
         }
 
         // --- Lógica de Dashboard y Gráficos ---
-        function updateCharts() {
-            const totalIncome = allTransactions.filter(t => t.Movimiento === 'Ingreso').reduce((sum, t) => sum + (t.Monto || 0), 0);
-            const totalExpense = allTransactions.filter(t => t.Movimiento === 'Egreso').reduce((sum, t) => sum + (t.Monto || 0), 0);
-            const currentBalance = totalIncome - totalExpense;
+        // Nueva función para poblar el filtro de año del dashboard
+        function populateDashboardFilterYears() {
+            dashboardFilterYearSelect.innerHTML = '<option value="all">Todos</option>';
+            const years = new Set();
+            allTransactions.forEach(t => {
+                const year = t.Fecha ? new Date(t.Fecha).getFullYear().toString() : '';
+                if (year) years.add(year);
+            });
 
-            currentBalanceEl.textContent = formatCurrency(currentBalance);
+            const sortedYears = Array.from(years).sort((a, b) => parseInt(b) - parseInt(a));
+            sortedYears.forEach(year => {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                dashboardFilterYearSelect.appendChild(option);
+            });
+            
+            const now = new Date();
+            const currentYear = now.getFullYear().toString();
+            const currentMonth = (now.getMonth() + 1).toString().padStart(2, '0');
+            dashboardFilterYearSelect.value = currentYear;
+            dashboardFilterMonthSelect.value = currentMonth;
+        }
+
+        // Nueva función para filtrar y actualizar el dashboard
+        function filterDashboardTransactions() {
+            const year = dashboardFilterYearSelect.value;
+            const month = dashboardFilterMonthSelect.value;
+
+            let transactionsForPeriod = allTransactions.filter(t => {
+                const transactionDate = t.Fecha ? new Date(t.Fecha) : null;
+                if (!transactionDate) return false;
+
+                const transactionYear = transactionDate.getFullYear().toString();
+                const transactionMonth = (transactionDate.getMonth() + 1).toString().padStart(2, '0');
+
+                const yearMatch = year === 'all' || transactionYear === year;
+                const monthMatch = month === 'all' || transactionMonth === month;
+
+                return yearMatch && monthMatch;
+            });
+            
+            updateDashboard(transactionsForPeriod, year, month);
+        }
+
+        function updateDashboard(transactionsForPeriod, selectedYear, selectedMonth) {
+            // Calcular saldos acumulados hasta el periodo seleccionado
+            let accumulatedBalance = 0;
+            if (selectedYear !== 'all') {
+                allTransactions.forEach(t => {
+                    const transactionDate = t.Fecha ? new Date(t.Fecha) : null;
+                    if (!transactionDate) return;
+                    
+                    const transactionYear = transactionDate.getFullYear().toString();
+                    const transactionMonth = (transactionDate.getMonth() + 1).toString().padStart(2, '0');
+
+                    if (transactionYear < selectedYear) {
+                        accumulatedBalance += (t.Movimiento === 'Ingreso' ? (t.Monto || 0) : -(t.Monto || 0));
+                    } else if (transactionYear === selectedYear) {
+                        if (selectedMonth === 'all') {
+                            accumulatedBalance += (t.Movimiento === 'Ingreso' ? (t.Monto || 0) : -(t.Monto || 0));
+                        } else if (transactionMonth <= selectedMonth) {
+                            accumulatedBalance += (t.Movimiento === 'Ingreso' ? (t.Monto || 0) : -(t.Monto || 0));
+                        }
+                    }
+                });
+            } else {
+                // Si el año es "todos", el saldo es el total de todas las transacciones
+                accumulatedBalance = allTransactions.reduce((acc, t) => acc + (t.Movimiento === 'Ingreso' ? (t.Monto || 0) : -(t.Monto || 0)), 0);
+            }
+
+            // Calcular ingresos y gastos solo para el periodo seleccionado
+            const totalIncome = transactionsForPeriod.filter(t => t.Movimiento === 'Ingreso').reduce((sum, t) => sum + (t.Monto || 0), 0);
+            const totalExpense = transactionsForPeriod.filter(t => t.Movimiento === 'Egreso').reduce((sum, t) => sum + (t.Monto || 0), 0);
+
+            currentBalanceEl.textContent = formatCurrency(accumulatedBalance);
             totalIncomesEl.textContent = formatCurrency(totalIncome);
             totalExpensesEl.textContent = formatCurrency(totalExpense);
 
@@ -1335,12 +1434,12 @@
             if (expenseChartInstance) expenseChartInstance.destroy();
 
             const incomeTypes = {};
-            allTransactions.filter(t => t.Movimiento === 'Ingreso').forEach(t => {
+            transactionsForPeriod.filter(t => t.Movimiento === 'Ingreso').forEach(t => {
                 incomeTypes[t.Tipo] = (incomeTypes[t.Tipo] || 0) + (t.Monto || 0);
             });
 
             const expenseTypes = {};
-            allTransactions.filter(t => t.Movimiento === 'Egreso').forEach(t => {
+            transactionsForPeriod.filter(t => t.Movimiento === 'Egreso').forEach(t => {
                 expenseTypes[t.Tipo] = (expenseTypes[t.Tipo] || 0) + (t.Monto || 0);
             });
 
@@ -1428,6 +1527,7 @@
                 }
             });
         }
+
 
         // --- Lógica de Filtros ---
         function applyFilters() {
@@ -1769,9 +1869,13 @@
             }
 
             if (tabId === 'dashboard') {
-                updateCharts();
+                populateDashboardFilterYears();
+                filterDashboardTransactions();
             } else if (tabId === 'transactionsSection') {
                 populateFilterYears();
+                const now = new Date();
+                const currentMonth = (now.getMonth() + 1).toString().padStart(2, '0');
+                filterMonthSelect.value = currentMonth;
                 applyFilters();
             } else if (tabId === 'predefinedTypesSection') {
                 renderPredefinedTypes();
@@ -1831,12 +1935,17 @@
                 }
             });
 
+            // Listeners para filtros de Transacciones
             filterYearSelect.addEventListener('change', applyFilters);
             filterMonthSelect.addEventListener('change', applyFilters);
             filterTypeSelect.addEventListener('change', applyFilters);
             filterMovementSelect.addEventListener('change', applyFilters);
             filterKeywordsInput.addEventListener('input', applyFilters);
             applyFiltersButton.addEventListener('click', applyFilters);
+
+            // Listeners para filtros del Dashboard
+            dashboardFilterYearSelect.addEventListener('change', filterDashboardTransactions);
+            dashboardFilterMonthSelect.addEventListener('change', filterDashboardTransactions);
         });
     </script>
 </body>
