@@ -1,15 +1,15 @@
 
-// 1. Bloquear clic derecho
+// 1. Bloquer clic derecho
 window.addEventListener('contextmenu', e => e.preventDefault());
 
-// 2. Bloquear clic izquierdo fuera de campos permitidos
+// 2. Bloquea clic izquierdo fuera de campos permitidos
 window.addEventListener('mousedown', e => {
   if (e.button === 0 && !['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) {
     e.preventDefault();
   }
 });
 
-// 3. Bloquear teclas especiales y combinaciones peligrosas
+// 3. Bloquea teclas especiales y combinaciones peligrosas
 window.addEventListener('keydown', e => {
   const key = e.key.toLowerCase();
   const tag = e.target.tagName;
@@ -48,6 +48,6 @@ window.addEventListener('keydown', e => {
   }
 });
 
-// 4. Protección básica en móviles (evitar selección y copiado)
+// 4. Protección para móviles (esto evita la selección y el copiado)
 document.addEventListener('selectstart', e => e.preventDefault());
 document.addEventListener('copy', e => e.preventDefault());
